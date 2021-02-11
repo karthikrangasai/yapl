@@ -1,0 +1,11 @@
+function integer::@factorial (integer::n) {
+	if (n=0) {
+		return 1;
+	} end
+	return n*@factorial(n-1);
+} end_definition
+
+function void::@main (void) {
+	integer::a:=20;
+	@factorial(a);
+} end_definition
