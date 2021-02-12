@@ -35,12 +35,20 @@
 	- [x] Load the parser.c and call the parser function
 - [ ] Parser
 - [ ] Lexer
-	- [ ] Load lexer state
+	- [x] Load lexer state
+	- [x] Variable Indentifier
+	- [x] Function Identifier
+	- [ ] Integer Literal Identifier
+	- [ ] Float Literal Identifier
+	- [x] Operator Identifier
+	- [x] Skip Empty lines
+	- [ ] Skip Comments
+	- [ ] Check Indentation of blocks
 - [ ] Token
 	- [x] Define tokens
 	- [x] functions for operators
-	- [ ] functions for variable identifier
-	- [ ] functions for function identifier
+	- [x] functions for variable identifier
+	- [x] functions for function identifier
 
 ## References
 - Check indentation

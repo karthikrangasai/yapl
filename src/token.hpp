@@ -40,22 +40,24 @@ typedef enum TOKEN_TYPE {
     NEWLINE = 27,
     INDENT = 28,
     DEDENT = 29,
-    VAR_INDENTIFIER = 30,
-    AT_THE_RATE = 31,
-    FUNC_INDENTIFIER = 32,
-    INTEGER = 33,
-    FLOAT = 34,
-    COMMENT = 35,
+    KEYWORD = 30,
+    VAR_INDENTIFIER = 31,
+    AT_THE_RATE = 32,
+    FUNC_INDENTIFIER = 33,
+    INTEGER = 34,
+    FLOAT = 35,
+    COMMENT = 36,
+    SPACE = 37,
     ERROR = 420
 } TOKEN_TYPE;
 
 // #define ERROR 420
 #define ENDMARKER 0
 
-#define NUM_TOKENS 36
+#define NUM_TOKENS 38
 #define NT_OFFSET 256
 
-const char* const token_names[36] = {
+const char* const token_names[38] = {
     "BITWISE_NOT",
     "BITWISE_AND",
     "BITWISE_OR",
@@ -86,15 +88,17 @@ const char* const token_names[36] = {
     "NEWLINE",
     "INDENT",
     "DEDENT",
+    "KEYWORD",
     "VAR_INDENTIFIER",
     "AT_THE_RATE",
     "FUNC_INDENTIFIER",
     "INTEGER",
     "FLOAT",
     "COMMENT",
+    "SPACE",
 };
 
-int num_keywords = 17;
+#define NUM_KEYWORDS 17
 const string keywords[17] = {
     "void",
     "boolean",
@@ -118,11 +122,12 @@ const string keywords[17] = {
 typedef struct Token {
     int line_number;
     TOKEN_TYPE token;
-    const string lexeme;
-    Token(int line_number, TOKEN_TYPE token, string lexeme) {
-        line_number = line_number;
-        token = token;
-        lexeme = string(lexeme);
+    string lexeme;
+
+    Token(int lineNumber, TOKEN_TYPE token_type, string lexeme_string) {
+        line_number = lineNumber;
+        token = token_type;
+        lexeme = string(lexeme_string);
     }
 } Token;
 

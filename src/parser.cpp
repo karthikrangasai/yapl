@@ -17,7 +17,6 @@ void printTokenMessage(Token* token) {
         cout << "Token Type: " << getTokenName(token->token) << ", ";
         cout << "Lexeme: " << token->lexeme << "\n";
     }
-    cout << "NCBD: Cut Cut\n";
 }
 
 bool startParser(string filename) {
@@ -27,15 +26,30 @@ bool startParser(string filename) {
         return success;
     }
 
-    // While getToken() doesn't give NULL/EOF keep going
-    // Current print
-    string input;
-    cout << "Please enter something: ";
-    cin >> input;
-    while (input != "quit") {
-        Token* next_token = getNextToken();
+    // While getToken() doesn't give NULL/EOF keep going Current print
+
+    // string input;
+    // cout << "Please enter something: ";
+    // cin >> input;
+    // while (input != "quit") {
+    //     Token* next_token = getNextToken();
+    //     if (next_token != NULL) {
+    //         printTokenMessage(next_token);
+    //         cin >> input;
+    //     } else if (lexer_state->eof) {
+    //         break;
+    //     }
+    // }
+
+    Token* next_token = getNextToken();
+    while (true) {
+        if (next_token == NULL || lexer_state->eof) {
+            if (!(lexer_state->emptyBuffer)) {
+                break;
+            }
+        }
         printTokenMessage(next_token);
-        cin >> input;
+        next_token = getNextToken();
     }
 
     return true;

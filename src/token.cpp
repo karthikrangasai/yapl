@@ -71,6 +71,12 @@ TOKEN_TYPE getTokenTypeUsingOneChar(int character) {
         case '@':
             return AT_THE_RATE;
             break;
+        case ' ':
+            return SPACE;
+            break;
+        case '\n':
+            return NEWLINE;
+            break;
 
         default:
             return ERROR;
@@ -127,7 +133,7 @@ TOKEN_TYPE getTokenTypeUsingThreeChar(int char1, int char2, int char3) {
 }
 
 bool belongsToFirstIdentifierAlphabet(int character) {
-    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character == '_'));
+    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z'));
 }
 
 bool belongsToIdentifierAlphabet(int character) {

@@ -1,1 +1,1 @@
-g++ main.cpp -o yapl
+g++ -g main.cpp -o yapl
