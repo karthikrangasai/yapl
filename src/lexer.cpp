@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 using namespace std;
 
 // Global Variables
@@ -20,7 +19,7 @@ bool isKeyword(string identifier) {
 }
 
 // Test RE [a-zA-Z][_a-zA-Z0-9]*
-bool isVariableIdentifier(string identifier) {
+bool isVariableLiteral(string identifier) {
     int bufferPointer = 0;
     if (belongsToFirstIdentifierAlphabet(identifier[bufferPointer])) {
         ++bufferPointer;
@@ -35,6 +34,51 @@ bool isVariableIdentifier(string identifier) {
     return false;
 }
 
+// Test RE @[a-zA-Z][_a-zA-Z0-9]*
+bool isFunctionLiteral(string identifier) {
+    return (identifier[0] == '@') && isVariableLiteral(identifier.substr(1, identifier.size() - 1));
+}
+
+bool isValidLiteral(string identifier) {
+    switch (lexer_state->currentLiteralState) {
+        case VARIABLE_LITERAL: {
+            return isVariableLiteral(identifier);
+        }
+        case FUNCTION_LITERAL: {
+            return isFunctionLiteral(identifier);
+        }
+            // case INTEGER_LITERAL: {
+            //     return isVariableLiteral(identifier);
+            // }
+            // case FLOAT_LITERAL: {
+            //     return isVariableLiteral(identifier);
+            // }
+    }
+    return false;
+}
+
+Token* getAppropriateToken() {
+    switch (lexer_state->currentLiteralState) {
+        case VARIABLE_LITERAL:
+        case FUNCTION_LITERAL: {
+            if (isKeyword(lexer_state->identifierTokenBuffer)) {
+                return new Token(lexer_state->lineNumber, KEYWORD, string(lexer_state->identifierTokenBuffer));
+            }
+            return new Token(
+                lexer_state->lineNumber,
+                (lexer_state->currentLiteralState == VARIABLE_LITERAL) ? VAR_IDENTIFIER : FUNC_IDENTIFIER,
+                string(lexer_state->identifierTokenBuffer));
+        }
+            // case INTEGER_LITERAL: {
+            //     return isVariableLiteral(identifier);
+            // }
+            // case FLOAT_LITERAL: {
+            //     return isVariableLiteral(identifier);
+            // }
+    }
+    return NULL;
+}
+
 /*	method: _getNextTokenHelper()
 	We have to read each the buffer char by char
 	Then for each char:
@@ -43,21 +87,8 @@ bool isVariableIdentifier(string identifier) {
 			Then find full identifer and return IDENTIFIER / KEYWORD token
 		else:
 			Find it's TOKEN_TYPE and act accordingly
-	
 	Don't forget to update the lookAheadPtr.
-
-
-	Space Indentation Rules:
-		After the keywords: if, else, for, while, function, @main, return
-		After the tokens: 
-			} : Always, coz } is followed by end or end_definition
-			) : Not always, only when the keywords are if, for, while, function
-				For expressions, not needed.
-		What else ?
 */
-//	Buf: function
-//	Cur: ^
-//	LAP: ^
 Token* _getNextTokenHelper() {
     string buffer = lexer_state->buffer;
     Token* token = NULL;
@@ -65,27 +96,24 @@ Token* _getNextTokenHelper() {
     while (!lexer_state->gotToken) {
         // char currChar = buffer[lexer_state->lookAheadPtr];
         // Not sure what we are going to see
-        if (lexer_state->identifierState == NON_IDENTIFIER_CHECK || lexer_state->funcIdentifierState == FUNC_IDENTIFIER_START) {
+        if (lexer_state->currentLiteralState == NO_LITERAL) {
             // Checks for RE: [a-zA-Z]
             if (belongsToFirstIdentifierAlphabet(buffer[lexer_state->lookAheadPtr])) {
                 lexer_state->identifierTokenBuffer = buffer.substr(lexer_state->currPtr, 1);
-                lexer_state->identifierState = IDENTIFIER_CHECK;
+                lexer_state->currentLiteralState = VARIABLE_LITERAL;
                 ++lexer_state->lookAheadPtr;
-                if (lexer_state->funcIdentifierState == FUNC_IDENTIFIER_START) {
-                    lexer_state->funcIdentifierState = FUNC_IDENTIFIER_CHECK;
-                }
+            } else if (false) {
+                // Add integer identifier
+                // See (0 | [1-9]) => Cut to number literal
+
+                // Float identifier = integer and you see a dot : I think
             } else {
-                // Remaining Hungama
                 TOKEN_TYPE token_type = getTokenTypeUsingOneChar(buffer[lexer_state->lookAheadPtr]);
 
                 switch (token_type) {
                     case AT_THE_RATE: {
-                        //    : @factorail
-                        // Buf: @main
-                        // Cur:  ^
-                        // LAP:   ^
-                        lexer_state->funcIdentifierState = FUNC_IDENTIFIER_START;
-                        // lexer_state->identifierTokenBuffer.push_back(buffer[lexer_state->lookAheadPtr]);  // Appends '@'
+                        lexer_state->currentLiteralState = FUNCTION_LITERAL;
+                        lexer_state->identifierTokenBuffer.push_back(buffer[lexer_state->lookAheadPtr]);  // Appends '@'
                         lexer_state->updateCurrPtr(1);
                         lexer_state->updateLookAheadPtr();
                         break;
@@ -140,10 +168,6 @@ Token* _getNextTokenHelper() {
                             s.push_back(buffer[lexer_state->lookAheadPtr]);
                             s.push_back(buffer[lexer_state->lookAheadPtr + 1]);
                             token = new Token(lexer_state->lineNumber, new_token_type, s);
-                            // token = new Token();
-                            // token->line_number = lexer_state->lineNumber;
-                            // token->token = new_token_type;
-                            // token->lexeme = string(s);
                             lexer_state->updateCurrPtr(2);
                             lexer_state->updateLookAheadPtr();
                             lexer_state->foundToken();
@@ -179,10 +203,9 @@ Token* _getNextTokenHelper() {
 
                     case COMMENT: {
                         // Check for comment
-                        // Cut to next line and restart the loading process
-                        cout << "At char: " << buffer[lexer_state->lookAheadPtr] << " Comment detected\n";
-                        lexer_state->updateCurrPtr(1);
+                        lexer_state->updateCurrPtr(lexer_state->bufferLen - lexer_state->lookAheadPtr);
                         lexer_state->updateLookAheadPtr();
+                        lexer_state->foundToken();  // Small hackk to exit the loop
                         break;
                     }
 
@@ -202,42 +225,18 @@ Token* _getNextTokenHelper() {
                     }
                 }
             }  // Don't write code after this in this block
-        } else if (lexer_state->identifierState == IDENTIFIER_CHECK || lexer_state->funcIdentifierState == FUNC_IDENTIFIER_CHECK) {
-            // ***** Asset that both in if statement can't be true. If they are, then syntax error
-
+        } else {
             lexer_state->identifierTokenBuffer.push_back(buffer[lexer_state->lookAheadPtr]);
-            if (isVariableIdentifier(lexer_state->identifierTokenBuffer)) {
-                // If buffer[currPtr, lookAheadPtr] == [a-zA-Z][_a-zA-Z0-9]*
-                // Keep updating to check next char
+            bool isValid = isValidLiteral(lexer_state->identifierTokenBuffer);
+            if (isValid) {
                 ++lexer_state->lookAheadPtr;
             } else {
-                // Once buffer[currPtr, lookAheadPtr] != [a-zA-Z][_a-zA-Z0-9]*
-                // Retract lookAheadPtr
-                // --lexer_state->lookAheadPtr;
-
-                // Delete last char in `identifierTokenBuffer`
                 lexer_state->identifierTokenBuffer.pop_back();
-
-                // Now `identifierTokenBuffer` has a valid indentifer (valid based on RE)
-                if (lexer_state->funcIdentifierState == FUNC_IDENTIFIER_CHECK) {
-                    // --lexer_state->currPtr;
-                    if (isKeyword("@" + lexer_state->identifierTokenBuffer)) {
-                        token = new Token(lexer_state->lineNumber, KEYWORD, "@" + string(lexer_state->identifierTokenBuffer));
-                    } else {
-                        token = new Token(lexer_state->lineNumber, FUNC_INDENTIFIER, "@" + string(lexer_state->identifierTokenBuffer));
-                    }
-                    lexer_state->funcIdentifierState = NON_FUNC_IDENTIFIER_CHECK;
-                } else {
-                    if (isKeyword(lexer_state->identifierTokenBuffer)) {
-                        token = new Token(lexer_state->lineNumber, KEYWORD, string(lexer_state->identifierTokenBuffer));
-                    } else {
-                        token = new Token(lexer_state->lineNumber, VAR_INDENTIFIER, string(lexer_state->identifierTokenBuffer));
-                    }
-                }
-                lexer_state->identifierState = NON_IDENTIFIER_CHECK;
+                token = getAppropriateToken();
                 lexer_state->foundToken();
                 lexer_state->identifierTokenBuffer.clear();
                 lexer_state->updateCurrPtr(0);
+                lexer_state->currentLiteralState = NO_LITERAL;
             }
         }
     }
@@ -262,8 +261,7 @@ Token* getNextToken() {
             return NULL;
         } else {
             getline(lexer_state->source_file, lexer_state->buffer);
-
-            cout << "Current buffer: " << lexer_state->buffer << " with " << lexer_state->buffer.size() << " chars\n";
+            // cout << "Current buffer: " << lexer_state->buffer << " with " << lexer_state->buffer.size() << " chars\n";
             lexer_state->emptyBuffer = (lexer_state->buffer.size() == 0);
             if (lexer_state->emptyBuffer) {
                 return NULL;
@@ -281,9 +279,6 @@ Token* getNextToken() {
 }
 
 bool initLexer(string file_name) {
-    // Open the file here
-    // cout << file_name << "\n";
-
     try {
         lexer_state = new lexer(file_name);
     } catch (const std::exception& e) {

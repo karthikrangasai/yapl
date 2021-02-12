@@ -42,7 +42,7 @@
 	- [ ] Float Literal Identifier
 	- [x] Operator Identifier
 	- [x] Skip Empty lines
-	- [ ] Skip Comments
+	- [ ] Skip Comments: Doesn't work at all - Create a status flag or call reload buffer function (Need to create this function)
 	- [ ] Check Indentation of blocks
 - [ ] Token
 	- [x] Define tokens

@@ -1,31 +1,18 @@
 #ifndef LEXER_H
 #define LEXER_H
-
 #include <fstream>
 #include <iostream>
 #include <stack>
+
+#include "token.hpp"
 using namespace std;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdio.h>
-
-#include "token.hpp"
-
-#define MAX_INDENTATION 100
-
 #define _NEWLINE '\n'
 #define _INDENT '\t'
-#define BLOCK_OPEN '{'
-#define BLOCK_ClOSE '}'
-#define PARENTHESES_OPEN '('
-#define PARENTHESES_CLOSE ")"
-#define COMMA_SEP ','
-#define STATEMENT_SEP ';'
-#define COMMENT_START '#'
 
 // typedef struct Error {
 //     int line_number;
@@ -34,25 +21,20 @@ extern "C" {
 // } Error;
 
 // void printError(Error error);
-typedef enum IDENTIFIER_STATE {
-    NON_IDENTIFIER_CHECK,
-    IDENTIFIER_CHECK,  // In process
-    // IDENTIFIER_END     // Done
-} IDENTIFIER_STATE;
+enum LITERAL_STATE {
+    NO_LITERAL,
+    VARIABLE_LITERAL,
+    FUNCTION_LITERAL,
+    INTEGER_LITERAL,
+    FLOAT_LITERAL
+};
 
-typedef enum FUNC_IDENTIFIER_STATE {
-    NON_FUNC_IDENTIFIER_CHECK,
-    FUNC_IDENTIFIER_START,
-    FUNC_IDENTIFIER_CHECK  // In process
-    // IDENTIFIER_END     // Done
-} FUNC_IDENTIFIER_STATE;
-
-typedef enum ERROR_STATE {
+enum ERROR_STATE {
     NO_ERROR,
     SYNTAX_ERROR,
     INDENTATION_ERROR,
     NEWLINE_ERROR
-} ERROR_STATE;
+};
 
 typedef struct lexer {
     string fileName;
@@ -64,11 +46,7 @@ typedef struct lexer {
     int bufferLen;
     bool gotToken;
     stack<int> indentationStack;
-    bool spaceIndentation;
-    bool keywordDetected;
-
-    IDENTIFIER_STATE identifierState;
-    FUNC_IDENTIFIER_STATE funcIdentifierState;
+    LITERAL_STATE currentLiteralState;
     string identifierTokenBuffer;
     ERROR_STATE errorState;
     bool emptyBuffer;
@@ -81,9 +59,8 @@ typedef struct lexer {
         currPtr = lookAheadPtr = -1;
         lineNumber = 0;
         bufferLen = 0;
-        gotToken = spaceIndentation = keywordDetected = false;
-        identifierState = NON_IDENTIFIER_CHECK;
-        funcIdentifierState = NON_FUNC_IDENTIFIER_CHECK;
+        gotToken = false;
+        currentLiteralState = NO_LITERAL;
         identifierTokenBuffer = "";
         errorState = NO_ERROR;
         emptyBuffer = true;
@@ -105,35 +82,11 @@ typedef struct lexer {
     void resetGotToken() {
         gotToken = false;
     }
-
-    void spaceIndentationRequired() {
-        spaceIndentation = true;
-    }
-
-    void spaceIndentationReset() {
-        spaceIndentation = false;
-    }
-
-    bool isSpaceIndentationRequired() {
-        return spaceIndentation;
-    }
-
-    void setKeywordDetected() {
-        keywordDetected = true;
-    }
-
-    void resetKeywordDetected() {
-        keywordDetected = false;
-    }
-
-    bool isKeywordDetected() {
-        return keywordDetected;
-    }
 } lexer;
 
 bool isKeyword(string identifier);
-bool isVariableIdentifier(string identifier);
-bool isFunctionIdentifier(string identifier);
+bool isVariableLiteral(string identifier);
+bool isFunctionLiteral(string identifier);
 
 Token* getNextToken();
 
