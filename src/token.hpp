@@ -48,6 +48,8 @@ typedef enum TOKEN_TYPE {
     FLOAT = 35,
     COMMENT = 36,
     SPACE = 37,
+    PRE_INCEREMENT = 38,
+    PRE_DECREMENT = 39,
     ERROR = 420
 } TOKEN_TYPE;
 
@@ -57,7 +59,7 @@ typedef enum TOKEN_TYPE {
 #define NUM_TOKENS 38
 #define NT_OFFSET 256
 
-const char* const token_names[38] = {
+const char* const token_names[40] = {
     "BITWISE_NOT",
     "BITWISE_AND",
     "BITWISE_OR",
@@ -96,6 +98,8 @@ const char* const token_names[38] = {
     "FLOAT",
     "COMMENT",
     "SPACE",
+    "PRE_INCEREMENT",
+    "PRE_DECREMENT",
 };
 
 #define NUM_KEYWORDS 17
@@ -122,11 +126,13 @@ const string keywords[17] = {
 typedef struct Token {
     int line_number;
     TOKEN_TYPE token;
+    string token_name;
     string lexeme;
 
     Token(int lineNumber, TOKEN_TYPE token_type, string lexeme_string) {
         line_number = lineNumber;
         token = token_type;
+        token_name = token_names[token_type];
         lexeme = string(lexeme_string);
     }
 } Token;
@@ -136,7 +142,9 @@ TOKEN_TYPE getTokenTypeUsingTwoChar(int, int);
 TOKEN_TYPE getTokenTypeUsingThreeChar(int, int, int);
 bool belongsToFirstIdentifierAlphabet(int character);
 bool belongsToIdentifierAlphabet(int character);
-const string getTokenName(int token_code);
+bool isNonZeroInteger(int character);
+bool isStartingNumberDigit(int character);
+// const string getTokenName(int token_code);
 
 #ifdef __cplusplus
 }

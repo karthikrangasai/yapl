@@ -105,6 +105,20 @@ TOKEN_TYPE getTokenTypeUsingTwoChar(int char1, int char2) {
             }
         }
 
+        case '+': {
+            switch (char2) {
+                case '+':
+                    return PRE_INCEREMENT;
+            }
+        }
+
+        case '-': {
+            switch (char2) {
+                case '-':
+                    return PRE_DECREMENT;
+            }
+        }
+
         case ':': {
             switch (char2) {
                 case ':':
@@ -140,6 +154,10 @@ bool belongsToIdentifierAlphabet(int character) {
     return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9') || (character == '_'));
 }
 
-const string getTokenName(TOKEN_TYPE token_code) {
-    return token_names[token_code];
+bool isNonZeroInteger(int character) {
+    return (character >= '1' && character <= '9');
+}
+
+bool isStartingNumberDigit(int character) {
+    return (isNonZeroInteger(character) || character == '0');
 }

@@ -2,7 +2,7 @@
 #include <string>
 using namespace std;
 
-#include "./src/parser.cpp"
+#include "./src/parser.hpp"
 
 int main(int argc, char const* argv[]) {
     if (argc == 1) {
@@ -18,7 +18,9 @@ int main(int argc, char const* argv[]) {
     // Send filename to parser
     string filename = string(argv[1]);
 
-    bool success = startParser(filename);
+    Parser* parser = initializeParser(filename);
+
+    runParser(parser);
 
     return 0;
 }

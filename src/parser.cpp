@@ -1,5 +1,7 @@
 // Receive file from main.cpp and send it to lexer.cpp
 #include "parser.hpp"
+
+#include <stdlib.h>
 // Open file
 // Request token as and when necessary
 // Print (Line Number: %d, token_type, token_code, lexeme)
@@ -14,43 +16,63 @@ void printTokenMessage(Token* token) {
     if (token != NULL) {
         cout << "Line Number: " << token->line_number << ", ";
         cout << "Token Code: " << token->token << ", ";
-        cout << "Token Type: " << getTokenName(token->token) << ", ";
+        cout << "Token Type: " << token->token_name << ", ";
         cout << "Lexeme: " << token->lexeme << "\n";
     }
 }
 
-bool startParser(string filename) {
-    // Initialize Lexer Struct
-    bool success = initLexer(filename);  // lexer.c
-    if (!success) {
-        return success;
-    }
-
-    // While getToken() doesn't give NULL/EOF keep going Current print
-
+void runParser(Parser* parser) {
     // string input;
     // cout << "Please enter something: ";
     // cin >> input;
     // while (input != "quit") {
-    //     Token* next_token = getNextToken();
-    //     if (next_token != NULL) {
-    //         printTokenMessage(next_token);
-    //         cin >> input;
-    //     } else if (lexer_state->eof) {
-    //         break;
+    //     getNextToken(parser->lexer);
+    //     if (parser->lexer->lexerState == FOUND_TOKEN) {
+    //         Token* token = new Token(*(parser->lexer->currentToken));
+    //         parser->tokenList.push_back(token);
+    //         printTokenMessage(token);
+    //         parser->lexer->resetGotToken();
+    //     } else if (parser->lexer->lexerState == ERROR_OCCURED) {
+    //         cout << "Syntax Error at line " << parser->lexer->lineNumber << ".\n";
+    //         // parser->lexer->lexerState = SEARCHING;
+    //         parser->lexer->reseterrorOccured();
     //     }
+    //     cin >> input;
     // }
 
-    Token* next_token = getNextToken();
-    while (true) {
-        if (next_token == NULL || lexer_state->eof) {
-            if (!(lexer_state->emptyBuffer)) {
-                break;
-            }
-        }
-        printTokenMessage(next_token);
-        next_token = getNextToken();
-    }
+    // While lexer is searching, keep running
+    // Once ERROR_OCCURED or TOKEN_FOUND
+    // Then take action
 
-    return true;
+    do {
+        getNextToken(parser->lexer);  // }
+        if (parser->lexer->lexerState == FOUND_TOKEN) {
+            Token* token = new Token(*(parser->lexer->currentToken));
+            parser->tokenList.push_back(token);
+            printTokenMessage(token);
+            parser->lexer->resetGotToken();
+        } else if (parser->lexer->lexerState == ERROR_OCCURED) {
+            cout << "Syntax Error at line " << parser->lexer->lineNumber << ".\n";
+            parser->lexer->reseterrorOccured();
+        }
+    } while (!(parser->lexer->reachedEOF && ((parser->lexer->currPtr >= parser->lexer->bufferLen))));
+
+    // string input;
+    // do {
+    //     cin >> input;
+    //     getNextToken(parser->lexer);  // }
+    //     if (parser->lexer->lexerState == FOUND_TOKEN) {
+    //         Token* token = new Token(*(parser->lexer->currentToken));
+    //         parser->tokenList.push_back(token);
+    //         printTokenMessage(token);
+    //         parser->lexer->resetGotToken();
+    //     } else if (parser->lexer->lexerState == ERROR_OCCURED) {
+    //         cout << "Syntax Error at line " << parser->lexer->lineNumber << ".\n";
+    //         parser->lexer->reseterrorOccured();
+    //     }
+    // } while (input != "quit");
+}
+
+Parser* initializeParser(string filename) {
+    return new Parser(filename);
 }

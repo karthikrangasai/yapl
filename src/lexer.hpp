@@ -21,6 +21,13 @@ extern "C" {
 // } Error;
 
 // void printError(Error error);
+enum LEXER_STATE {
+    SEARCHING,
+    FOUND_TOKEN,
+    COMMENT_FOUND,
+    ERROR_OCCURED
+};
+
 enum LITERAL_STATE {
     NO_LITERAL,
     VARIABLE_LITERAL,
@@ -35,8 +42,7 @@ enum ERROR_STATE {
     INDENTATION_ERROR,
     NEWLINE_ERROR
 };
-
-typedef struct lexer {
+typedef struct Lexer {
     string fileName;
     fstream source_file;
     string buffer;
@@ -44,15 +50,20 @@ typedef struct lexer {
     int lookAheadPtr;
     int lineNumber;
     int bufferLen;
+
     bool gotToken;
+    Token* currentToken;
+    LEXER_STATE lexerState;
+
     stack<int> indentationStack;
+
     LITERAL_STATE currentLiteralState;
     string identifierTokenBuffer;
     ERROR_STATE errorState;
     bool emptyBuffer;
-    bool eof;
+    bool reachedEOF;
 
-    lexer(string file_name) {
+    Lexer(string file_name) {
         fileName = string(file_name);
         source_file.open(file_name, fstream::in);
         indentationStack = stack<int>();
@@ -60,11 +71,24 @@ typedef struct lexer {
         lineNumber = 0;
         bufferLen = 0;
         gotToken = false;
+        currentToken = NULL;
+        lexerState = SEARCHING;
         currentLiteralState = NO_LITERAL;
         identifierTokenBuffer = "";
         errorState = NO_ERROR;
         emptyBuffer = true;
-        eof = false;
+        reachedEOF = false;
+    }
+
+    void reloadBuffer() {
+        getline(source_file, buffer);
+        ++lineNumber;
+        while (buffer.size() == 0) {
+            getline(source_file, buffer);
+            ++lineNumber;
+        }
+        bufferLen = buffer.size();
+        currPtr = lookAheadPtr = 0;
     }
 
     void updateCurrPtr(int n) {
@@ -77,20 +101,30 @@ typedef struct lexer {
 
     void foundToken() {
         gotToken = true;
+        lexerState = FOUND_TOKEN;
     }
 
     void resetGotToken() {
         gotToken = false;
+        lexerState = SEARCHING;
     }
-} lexer;
+
+    void errorOccured() {
+        lexerState = ERROR_OCCURED;
+    }
+
+    void reseterrorOccured() {
+        lexerState = SEARCHING;
+    }
+} Lexer;
 
 bool isKeyword(string identifier);
 bool isVariableLiteral(string identifier);
 bool isFunctionLiteral(string identifier);
 
-Token* getNextToken();
+void getNextToken(Lexer* lexer);
 
-bool initLexer(string file_name);
+Lexer* initLexer(string file_name);
 
 #ifdef __cplusplus
 }

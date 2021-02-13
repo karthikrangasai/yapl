@@ -34,21 +34,26 @@
 	- [ ] Maybe Check extension
 	- [x] Load the parser.c and call the parser function
 - [ ] Parser
+	- [x] Load lexer
+	- [x] Run lexer when non EOF
+	- [ ] Phase 2 of assignment
 - [ ] Lexer
 	- [x] Load lexer state
 	- [x] Variable Indentifier
 	- [x] Function Identifier
-	- [ ] Integer Literal Identifier
-	- [ ] Float Literal Identifier
+	- [x] Integer Literal Identifier
+	- [x] Float Literal Identifier
 	- [x] Operator Identifier
 	- [x] Skip Empty lines
-	- [ ] Skip Comments: Doesn't work at all - Create a status flag or call reload buffer function (Need to create this function)
+	- [x] Skip Comments: Doesn't work at all - Create a status flag or call reload buffer function (Need to create this function)
 	- [ ] Check Indentation of blocks
-- [ ] Token
+	- [ ] Change while loop to loop on SEARCHING state.
+- [x] Token
 	- [x] Define tokens
 	- [x] functions for operators
 	- [x] functions for variable identifier
 	- [x] functions for function identifier
+- [ ] Error Correction of Code
 
 ## References
 - Check indentation
@@ -65,6 +70,6 @@ Check `./tests/examples/` directory for the examples.
 - [ ] Initialization Example
 - [ ] Conditonals Example
 - [ ] Loops Example
-- [ ] Function Example
+- [x] Function Example
 - [x] Recusrion Example
 - [ ] Kirk Patrick Seidel Example
