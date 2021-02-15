@@ -15,24 +15,75 @@ bool isKeyword(string identifier) {
     return false;
 }
 
+void string_start_state(char character, int* state) {
+    if (character == '\"') {
+        *state = 1;
+    } else {
+        *state = -1;
+    }
+}
+void string_state_1(char character, int* state) {
+    if (character == '\\') {  // check for '\'
+        *state = 2;
+    } else if (character == '\"') {
+        *state = 0;
+    }
+}
+void string_state_2(char character, int* state) {
+    if (character == '\'' || character == '\"' || character == '\\' || character == 'n' || character == 'r' || character == 't' || character == 'b' || character == 'f' || character == 'v' || character == '0') {
+        *state = 1;
+    } else {
+        *state = -1;
+    }
+}
+bool isStringLiteral(string identifier) {
+    int state = 0;
+    for (int i = 0; i < (int)identifier.size(); i++) {
+        if (state == 0) {
+            string_start_state(identifier[i], &state);
+        } else if (state == 1) {  // FINAL STATE
+            string_state_1(identifier[i], &state);
+        } else if (state == 2) {
+            string_state_2(identifier[i], &state);
+        } else if (state == -1) {  // TRAP STATE
+            return false;
+        }
+    }
+    return (state == 0);
+}
+
+void variable_start_state(char character, int* state) {
+    if ((character >= 'a' and character <= 'z') or (character >= 'A' and character <= 'Z'))
+        *state = 1;
+    else
+        *state = -1;  // trap state
+}
+void variable_state_1(char character, int* state) {
+    if ((character >= 'a' and character <= 'z') or (character >= 'A' and character <= 'Z') or (character >= '0' and character <= '9') or (character == '_'))
+        *state = 1;
+    else
+        *state = -1;  // trap state
+}
 // Test RE [a-zA-Z][_a-zA-Z0-9]*
 bool isVariableLiteral(string identifier) {
-    unsigned int bufferPointer = 0;
-    if (belongsToFirstIdentifierAlphabet(identifier[bufferPointer])) {
-        ++bufferPointer;
-        while (bufferPointer < identifier.size()) {
-            if (!belongsToIdentifierAlphabet(identifier[bufferPointer])) {
-                return false;
-            }
-            ++bufferPointer;
+    int state = 0;
+    for (int i = 0; i < (int)identifier.size(); ++i) {
+        if (state == 0) {
+            variable_start_state(identifier[i], &state);
+        } else if (state == 1) {
+            variable_state_1(identifier[i], &state);
+        } else if (state == -1) {  // trap state
+            return false;
         }
-        return true;
     }
-    return false;
+    return (state == 1);
 }
 
 // Test RE @[a-zA-Z][_a-zA-Z0-9]*
 bool isFunctionLiteral(string identifier) {
+    if (identifier == "@") {
+        return false;
+    }
     return (identifier[0] == '@') && isVariableLiteral(identifier.substr(1, identifier.size() - 1));
 }
 
@@ -49,14 +100,11 @@ void integerREStateEvaluator(char character, int* state) {
         *state = -1;  // trap state
 }
 bool isIntegerLiteral(Lexer* lexer, string identifier) {
+    if (identifier == "0") {
+        return true;
+    }
     int state = 0;
     for (int i = 0; i < (int)identifier.size(); i++) {
-        if (i == (int)(identifier.size() - 1)) {
-            if (identifier[i] == '.') {
-                lexer->currentLiteralState = FLOAT_LITERAL;
-                return true;
-            }
-        }
         if (state == 0) {
             integerREStartStateEvaluator(identifier[i], &state);
         } else if (state == 1) {
@@ -67,45 +115,56 @@ bool isIntegerLiteral(Lexer* lexer, string identifier) {
     }
     return (state == 1);
 }
-//AAAAAH
+
 void floatREStartStateEvaluator(char character, int* state) {
     if (character == '0') {
-        *state = 3;
-    } else if (character >= '1' and character <= '9') {
         *state = 4;
-    } else
+    } else if (character >= '1' and character <= '9') {
+        *state = 5;
+    } else {
         *state = -1;
-    return;
+    }
 }
 void state_2(char character, int* state) {
     if (character >= '1' and character <= '9') {
         *state = 2;
     } else if (character == '0') {
-        *state = 5;
-    } else
+        *state = 3;
+    } else {
         *state = -1;
+    }
 }
 void state_3(char character, int* state) {
-    if (character == '.') {
-        *state = 5;
-    } else
-        *state = -1;
-}
-void state_5(char character, int* state) {
     if (character == '0') {
-        *state = 5;
+        *state = 3;
     } else if (character >= '1' and character <= '9') {
         *state = 2;
-    } else
+    } else {
         *state = -1;
+    }
 }
 void state_4(char character, int* state) {
-    if (character >= '0' and character <= '9') {
-        *state = 4;
-    } else if (character == '.') {
-        *state = 5;
-    } else
+    if (character == '.') {
+        *state = 6;
+    } else {
         *state = -1;
+    }
+}
+void state_5(char character, int* state) {
+    if (character == '.') {
+        *state = 6;
+    } else if (character >= '0' and character <= '9') {
+        *state = 5;
+    } else {
+        *state = -1;
+    }
+}
+void state_6(char character, int* state) {
+    if (character >= '0' and character <= '9') {
+        *state = 2;
+    } else {
+        *state = -1;
+    }
 }
 bool isFloatLiteral(Lexer* lexer, string identifier) {
     int state = 1;
@@ -120,6 +179,8 @@ bool isFloatLiteral(Lexer* lexer, string identifier) {
             state_4(identifier[i], &state);
         } else if (state == 5) {
             state_5(identifier[i], &state);
+        } else if (state == 6) {
+            state_6(identifier[i], &state);
         } else if (state == -1) {  // TRAP STATE
             return false;
         }
@@ -147,6 +208,7 @@ bool isValidLiteral(Lexer* lexer) {
             isValid = isFloatLiteral(lexer, identifier);
             break;
         }
+        case STRING_LITERAL:
         case NO_LITERAL: {
             lexer->lexerState = ERROR_OCCURED;
             break;
@@ -173,6 +235,7 @@ Token* getAppropriateToken(Lexer* lexer) {
         case FLOAT_LITERAL: {
             return new Token(lexer->lineNumber, FLOAT, string(lexer->identifierTokenBuffer));
         }
+        case STRING_LITERAL:
         case NO_LITERAL: {
             lexer->lexerState = ERROR_OCCURED;
             break;
@@ -194,98 +257,60 @@ Token* getAppropriateToken(Lexer* lexer) {
 void _getNextTokenHelper(Lexer* lexer) {
     string buffer = lexer->buffer;
 
-    while (!lexer->gotToken) {
+    while (lexer->isSearching()) {
         // Not sure what we are going to see
         if (lexer->currentLiteralState == NO_LITERAL) {
-            // Checks for RE: [a-zA-Z]
-            if (belongsToFirstIdentifierAlphabet(buffer[lexer->lookAheadPtr])) {
+            if (buffer[lexer->lookAheadPtr] == '\"') {
+                // string data type
+                lexer->currentLiteralState = STRING_LITERAL;
+                lexer->stringState = STRING_STATE_ONE;
+                lexer->stringStart = true;
                 lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 1);
-                lexer->currentLiteralState = VARIABLE_LITERAL;
                 ++lexer->lookAheadPtr;
-            } else if (buffer[lexer->lookAheadPtr] == '0') {
-                // lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 1);
-                // lexer->currentLiteralState = INTEGER_LITERAL;
-                // ++lexer->lookAheadPtr;
-                /*	Error:
-						01 => INTEGER INTEGER
-						00.0 => INTEGER FLOAT
-						0.00 => FLOAT INTEGER
-				*/
-                if (buffer[lexer->lookAheadPtr + 1] == '.') {
-                    lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 2);  // "0."
-                    lexer->currentLiteralState = FLOAT_LITERAL;
-                    ++(++lexer->lookAheadPtr);
-                    // if (buffer[lexer->lookAheadPtr + 2] == '0') {
-                    //     // you have reached 0.0
-                    //     lexer->foundToken();
-                    //     lexer->currentToken = new Token(lexer->lineNumber, FLOAT, "0.0");
-                    //     lexer->updateCurrPtr(1);
-                    //     lexer->updateLookAheadPtr();
-                    // } else if (isNonZeroInteger(buffer[lexer->lookAheadPtr + 2])) {
-                    //     /*
-                    // 		you have reached 0.(1-9)
-                    // 		Not error state, but 0.[1-9]*[0-9] => FLOAT_LITERAL
-                    // 	*/
-                    //     lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 1);
-                    //     lexer->currentLiteralState = FLOAT_LITERAL;
-                    //     ++lexer->lookAheadPtr;
-                    // }
-                } else if (isNonZeroInteger(buffer[lexer->lookAheadPtr + 1])) {
-                    // if non zero number => error
-                    // you have reached 0(1-9)
-                    // throw error
-                    // 02345
-                    // ^
-                    //  ^
-                    lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 2);  // "0(1-9)"
-                    ++(++lexer->lookAheadPtr);
-                    while (isNonZeroInteger(buffer[lexer->lookAheadPtr])) {
-                        lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
-                        ++lexer->lookAheadPtr;
-                    }
-                    lexer->lexerState = ERROR_OCCURED;
-                    lexer->updateCurrPtr(0);
-                    lexer->updateLookAheadPtr();
-                    return;
-                } else {
-                    // return '0' as INTEGER
-                    lexer->foundToken();
-                    lexer->currentToken = new Token(lexer->lineNumber, INTEGER, "0");
-                    lexer->updateCurrPtr(1);
-                    lexer->updateLookAheadPtr();
+            } else if (belongsToFirstCharacterSetOfIndentifierRE(buffer[lexer->lookAheadPtr])) {
+                // Checks for RE: [a-zA-Z]
+                ++lexer->lookAheadPtr;
+                // Keep looking until [_a-zA-Z0-9]
+                while (belongsToIndentifierCharacterSet(buffer[lexer->lookAheadPtr])) {
+                    ++lexer->lookAheadPtr;
                 }
-                // if character means parser will take care
-            } else if (isNonZeroInteger(buffer[lexer->lookAheadPtr])) {
-                // how to change between integer and float ??????????????
-                /*	Brainstorming time
-						123 => int
-						123.4 => float
-
-						How to predict ?????????????????????????????????????????????????????????????????
-
-						123 => state = INTEGER_LITERAL
-						if (state == INTEGER_LITERAL and currentChar == '.') => FLOAT LITERAL
-				*/
-                lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 1);
-                lexer->currentLiteralState = INTEGER_LITERAL;
+                lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, (lexer->lookAheadPtr - lexer->currPtr));
+                lexer->currentLiteralState = VARIABLE_LITERAL;
+                // lexer->updateCurrPtr(0);
+            } else if (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {
+                // check for [0-9]
                 ++lexer->lookAheadPtr;
+                // Keep looking until [.0-9]
+                while (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {
+                    ++lexer->lookAheadPtr;
+                }
+                lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, (lexer->lookAheadPtr - lexer->currPtr));
+                if (lexer->identifierTokenBuffer.find('.') != string::npos) {
+                    lexer->currentLiteralState = FLOAT_LITERAL;
+                } else {
+                    lexer->currentLiteralState = INTEGER_LITERAL;
+                }
             } else {
                 TOKEN_TYPE token_type = getTokenTypeUsingOneChar(buffer[lexer->lookAheadPtr]);
 
                 switch (token_type) {
                     case AT_THE_RATE: {
-                        if (belongsToFirstIdentifierAlphabet(buffer[lexer->lookAheadPtr + 1])) {
+                        ++lexer->lookAheadPtr;
+                        if (belongsToFirstCharacterSetOfIndentifierRE(buffer[lexer->lookAheadPtr])) {
+                            ++lexer->lookAheadPtr;
+                            while (belongsToIndentifierCharacterSet(buffer[lexer->lookAheadPtr])) {
+                                ++lexer->lookAheadPtr;
+                            }
+                            lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, (lexer->lookAheadPtr - lexer->currPtr));
                             lexer->currentLiteralState = FUNCTION_LITERAL;
-                            lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);  // Appends '@'
-                            lexer->updateCurrPtr(1);
-                            lexer->updateLookAheadPtr();
                         } else {
-                            cout << "At char: " << buffer[lexer->lookAheadPtr] << " Error detected\n";
-                            lexer->updateCurrPtr(1);
-                            lexer->updateLookAheadPtr();
+                            // check for just '@'
+                            lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_FUNC_LITERAL, lexer->buffer, lexer->identifierTokenBuffer.size());
                             lexer->errorOccured();
+                            lexer->identifierTokenBuffer.clear();
+                            lexer->currentLiteralState = NO_LITERAL;
+                            lexer->updateCurrPtr(0);
                         }
-
                         break;
                     }
 
@@ -326,28 +351,6 @@ void _getNextTokenHelper(Lexer* lexer) {
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
-                        break;
-                    }
-
-                    case COLON: {  // ':' => Maybe '::' or ':=' or Syntax Error
-
-                        // Check for '::' or ':='
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
-                        if (new_token_type == ASSIGNMENT || new_token_type == BINDING) {
-                            string s;
-                            s.push_back(buffer[lexer->lookAheadPtr]);
-                            s.push_back(buffer[lexer->lookAheadPtr + 1]);
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, s);
-                            lexer->updateCurrPtr(2);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;
-                        }
-
-                        // ':' only -> Error
-                        cout << "At char " << buffer[lexer->lookAheadPtr] << " Syntax Error\n";
-                        lexer->updateCurrPtr(1);
-                        lexer->updateLookAheadPtr();
                         break;
                     }
 
@@ -418,21 +421,43 @@ void _getNextTokenHelper(Lexer* lexer) {
                     }
 
                     case COMMENT: {
-                        // cout << "Comment detected\n";
                         lexer->lexerState = COMMENT_FOUND;
                         lexer->currPtr = lexer->bufferLen;
-                        return;
-                    }
-
-                    case ERROR: {
-                        cout << "At char: " << buffer[lexer->lookAheadPtr] << " Error detected\n";
-                        lexer->updateCurrPtr(1);
-                        lexer->updateLookAheadPtr();
-                        lexer->errorOccured();
                         break;
                     }
 
-                    default: {  // {, }, (, ), [, ], ;, \n, " ", \t
+                    case COLON: {  // ':' => Maybe '::' or ':=' or Syntax Error
+
+                        // Check for '::' or ':='
+                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                        if (new_token_type == ASSIGNMENT || new_token_type == BINDING) {
+                            string s;
+                            s.push_back(buffer[lexer->lookAheadPtr]);
+                            s.push_back(buffer[lexer->lookAheadPtr + 1]);
+                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, s);
+                            lexer->updateCurrPtr(2);
+                            lexer->updateLookAheadPtr();
+                            lexer->foundToken();
+                            break;
+                        }
+                    }
+
+                    case ERROR: {
+                        lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, STRAY_CHARACTER, lexer->buffer, 1);
+                        lexer->errorOccured();
+                        lexer->updateCurrPtr(1);
+                        lexer->updateLookAheadPtr();
+                        break;
+                    }
+
+                    case SPACE:
+                    case TAB: {
+                        lexer->updateCurrPtr(1);
+                        lexer->updateLookAheadPtr();
+                        break;
+                    }
+
+                    default: {  // {, }, (, ), [, ], ;, \n
                         lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
@@ -441,23 +466,137 @@ void _getNextTokenHelper(Lexer* lexer) {
                     }
                 }
             }  // Don't write code after this in this block
-        } else {
-            lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
-            bool isValid = isValidLiteral(lexer);
-            if (isValid) {
-                ++lexer->lookAheadPtr;
-            } else {
-                if (lexer->lexerState == ERROR_OCCURED) {
-                    return;
+        } else if (lexer->currentLiteralState == STRING_LITERAL) {
+            // Buf: "Hello world\uBye"
+            // LAP:             ^
+            // Cur: ^
+            if (lexer->stringState == STRING_STATE_ONE) {
+                if (lexer->lookAheadPtr >= lexer->bufferLen) {
+                    // NCBD => Error
+                    lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_STRING, lexer->buffer, (lexer->lookAheadPtr - lexer->currPtr));
+                    lexer->updateCurrPtr(0);
+                    lexer->updateLookAheadPtr();
+                    lexer->errorOccured();
+                    lexer->currentLiteralState = NO_LITERAL;
+                    lexer->stringState = STRING_STATE_START;
+                } else if (buffer[lexer->lookAheadPtr] == '\\') {
+                    lexer->stringState = STRING_STATE_TWO;
+                    lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
+                    ++lexer->lookAheadPtr;
+                } else if (buffer[lexer->lookAheadPtr] == '\"') {
+                    lexer->stringState = STRING_STATE_END;
+                    lexer->stringStart = false;
+                    lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
+                    ++lexer->lookAheadPtr;
+                } else {
+                    lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
+                    ++lexer->lookAheadPtr;
                 }
-                lexer->identifierTokenBuffer.pop_back();
-                lexer->currentToken = getAppropriateToken(lexer);
-                lexer->foundToken();
-                lexer->identifierTokenBuffer.clear();
-                lexer->updateCurrPtr(0);
-                lexer->currentLiteralState = NO_LITERAL;
+            } else if (lexer->stringState == STRING_STATE_TWO) {
+                if (buffer[lexer->lookAheadPtr] == '\'' || buffer[lexer->lookAheadPtr] == '\"' || buffer[lexer->lookAheadPtr] == '\\' || buffer[lexer->lookAheadPtr] == 'n' || buffer[lexer->lookAheadPtr] == 'r' || buffer[lexer->lookAheadPtr] == 't' || buffer[lexer->lookAheadPtr] == 'b' || buffer[lexer->lookAheadPtr] == 'f' || buffer[lexer->lookAheadPtr] == 'v' || buffer[lexer->lookAheadPtr] == '0') {
+                    lexer->stringState = STRING_STATE_ONE;
+                    lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
+                    ++lexer->lookAheadPtr;
+                } else {
+                    // NCBD => Error
+                    lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_STRING, lexer->buffer, (lexer->lookAheadPtr - lexer->currPtr + 1));
+                    lexer->updateCurrPtr(1);
+                    lexer->updateLookAheadPtr();
+                    lexer->errorOccured();
+                    lexer->currentLiteralState = NO_LITERAL;
+                    lexer->stringState = STRING_STATE_START;
+                }
+            } else if (lexer->stringState == STRING_STATE_END) {
+                if (lexer->lookAheadPtr - lexer->currPtr > 0) {
+                    lexer->currentToken = new Token(lexer->lineNumber, STRING, string(lexer->identifierTokenBuffer));
+                    lexer->updateCurrPtr(0);
+                    lexer->updateLookAheadPtr();
+                    lexer->foundToken();
+                    lexer->currentLiteralState = NO_LITERAL;
+                    lexer->stringState = STRING_STATE_START;
+                }
             }
+        } else if (lexer->currentLiteralState == VARIABLE_LITERAL) {
+            bool isValid = isVariableLiteral(lexer->identifierTokenBuffer);
+            if (isValid) {
+                if (isKeyword(lexer->identifierTokenBuffer)) {
+                    lexer->currentToken = new Token(lexer->lineNumber, KEYWORD, string(lexer->identifierTokenBuffer));
+                } else {
+                    lexer->currentToken = new Token(lexer->lineNumber, VAR_IDENTIFIER, string(lexer->identifierTokenBuffer));
+                }
+                lexer->foundToken();
+            } else {
+                lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_VAR_LITERAL, lexer->buffer, lexer->identifierTokenBuffer.size());
+                lexer->errorOccured();
+            }
+            lexer->identifierTokenBuffer.clear();
+            lexer->currentLiteralState = NO_LITERAL;
+            lexer->updateCurrPtr(0);
+        } else if (lexer->currentLiteralState == FUNCTION_LITERAL) {
+            bool isValid = isFunctionLiteral(lexer->identifierTokenBuffer);
+            if (isValid) {
+                if (isKeyword(lexer->identifierTokenBuffer)) {
+                    lexer->currentToken = new Token(lexer->lineNumber, KEYWORD, string(lexer->identifierTokenBuffer));
+                } else {
+                    lexer->currentToken = new Token(lexer->lineNumber, FUNC_IDENTIFIER, string(lexer->identifierTokenBuffer));
+                }
+                lexer->foundToken();
+            } else {
+                lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_FUNC_LITERAL, lexer->buffer, lexer->identifierTokenBuffer.size());
+                lexer->errorOccured();
+            }
+            lexer->identifierTokenBuffer.clear();
+            lexer->currentLiteralState = NO_LITERAL;
+            lexer->updateCurrPtr(0);
+        } else if (lexer->currentLiteralState == INTEGER_LITERAL) {
+            bool isValid = isIntegerLiteral(lexer, lexer->identifierTokenBuffer);
+            if (isValid) {
+                lexer->currentToken = new Token(lexer->lineNumber, INTEGER, string(lexer->identifierTokenBuffer));
+                lexer->foundToken();
+            } else {
+                lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_INTEGER, lexer->buffer, lexer->identifierTokenBuffer.size());
+                lexer->errorOccured();
+            }
+            lexer->identifierTokenBuffer.clear();
+            lexer->currentLiteralState = NO_LITERAL;
+            lexer->updateCurrPtr(0);
+        } else if (lexer->currentLiteralState == FLOAT_LITERAL) {
+            bool isValid = isFloatLiteral(lexer, lexer->identifierTokenBuffer);
+            if (isValid) {
+                lexer->currentToken = new Token(lexer->lineNumber, FLOAT, string(lexer->identifierTokenBuffer));
+                lexer->foundToken();
+            } else {
+                lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_FLOAT, lexer->buffer, lexer->identifierTokenBuffer.size());
+                lexer->errorOccured();
+            }
+            lexer->identifierTokenBuffer.clear();
+            lexer->currentLiteralState = NO_LITERAL;
+            lexer->updateCurrPtr(0);
         }
+        // NCBD AF
+        // } else {
+        //     bool isValid = isValidLiteral(lexer);
+        //     if (isValid) {
+        //         lexer->currentToken = getAppropriateToken(lexer);
+        //         lexer->foundToken();
+        //     } else {
+        //         LEXER_ERROR_TYPE errorType;
+        //         if (lexer->currentLiteralState == VARIABLE_LITERAL) {
+        //             errorType = INVALID_VAR_LITERAL;
+        //         } else if (lexer->currentLiteralState == FUNCTION_LITERAL) {
+        //             errorType = INVALID_FUNC_LITERAL;
+        //         } else if (lexer->currentLiteralState == INTEGER_LITERAL) {
+        //             errorType = INVALID_INTEGER;
+        //         } else if (lexer->currentLiteralState == FLOAT_LITERAL) {
+        //             errorType = INVALID_FLOAT;
+        //         }
+        //         lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, errorType, lexer->buffer, lexer->identifierTokenBuffer.size());
+        //         lexer->errorOccured();
+        //     }
+        //     lexer->identifierTokenBuffer.clear();
+        //     lexer->currentLiteralState = NO_LITERAL;
+        //     lexer->updateCurrPtr(0);
+        // }
     }
 }
 
@@ -469,15 +608,15 @@ void _getNextTokenHelper(Lexer* lexer) {
 
 	Comments can anywhere. Just neglect entire buffer once you read a single '#'
 */
-
 void getNextToken(Lexer* lexer) {
     while (lexer->lexerState == LEXER_STATE::SEARCHING) {
-        bool reloadBuffer = !((lexer->currPtr != -1) && (lexer->currPtr < lexer->bufferLen));
+        bool reloadBuffer = !(lexer->currPtr < lexer->bufferLen);
         if (reloadBuffer) {
             lexer->reloadBuffer();
-            bool reachedEOF = lexer->source_file.eof();
-            if (reachedEOF) {
-                lexer->reachedEOF = true;
+            if (lexer->reachedEOF) {
+                if (lexer->bufferLen == 0) {
+                    return;
+                }
                 reloadBuffer = false;
             }
         }

@@ -1,8 +1,8 @@
 <program>					::= <functions>
 <functions>					::= <functions> <function> | <function> | <main>
 
-<function> 					::= "function" <space_indent> <return_type> "::" <function_identifier> <space_indent> "(" <function_parameters> ")" <space_indent> "{\n" <compound_statements> "}" <space_indent> "end_definition\n"
-<main> 						::= "function" <space_indent> <return_type> "::@main (" <function_parameters> ") {\n" <compound_statements> "} end_definition"
+<function> 					::= "function" <return_type> "::" <function_identifier> <space_indent> "(" <function_parameters> ")" <space_indent> "{\n" <compound_statements> "}" <space_indent> "end_definition\n"
+<main> 						::= "function" <return_type> "::@main (" <function_parameters> ") {\n" <compound_statements> "} end_definition"
 <function_parameters>		::= <parameters> | "void"
 <parameters> 				::= <parameter> | <parameter> "," <space_indent> <parameters>
 <parameter>					::= <data_type> "::" <identifier>

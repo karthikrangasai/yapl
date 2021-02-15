@@ -49,10 +49,16 @@ void runParser(Parser* parser) {
         if (parser->lexer->lexerState == FOUND_TOKEN) {
             Token* token = new Token(*(parser->lexer->currentToken));
             parser->tokenList.push_back(token);
-            printTokenMessage(token);
+            // printTokenMessage(token);
             parser->lexer->resetGotToken();
         } else if (parser->lexer->lexerState == ERROR_OCCURED) {
-            cout << "Syntax Error at line " << parser->lexer->lineNumber << ".\n";
+            LexerError* lexerError = new LexerError(*(parser->lexer->currentLexerError));
+            parser->lexerErrors.push_back(lexerError);
+            // cout << parser->lexer->fileName << ":";
+            // parser->lexer->currentLexerError->print(parser->lexer->fileName);
+            // cout << "";
+            // cout << parser->lexer->fileName << ":" << parser->lexer->lineNumber << ":";
+            // cout << "Syntax Error at line " << parser->lexer->lineNumber << ".\n";
             parser->lexer->reseterrorOccured();
         }
     } while (!(parser->lexer->reachedEOF && ((parser->lexer->currPtr >= parser->lexer->bufferLen))));

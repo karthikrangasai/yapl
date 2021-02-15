@@ -48,8 +48,10 @@ typedef enum TOKEN_TYPE {
     FLOAT = 35,
     COMMENT = 36,
     SPACE = 37,
-    PRE_INCEREMENT = 38,
-    PRE_DECREMENT = 39,
+    TAB = 38,
+    PRE_INCEREMENT = 39,
+    PRE_DECREMENT = 40,
+    STRING = 41,
     ERROR = 420
 } TOKEN_TYPE;
 
@@ -59,7 +61,7 @@ typedef enum TOKEN_TYPE {
 #define NUM_TOKENS 38
 #define NT_OFFSET 256
 
-const char* const token_names[40] = {
+const char* const token_names[42] = {
     "BITWISE_NOT",
     "BITWISE_AND",
     "BITWISE_OR",
@@ -98,9 +100,10 @@ const char* const token_names[40] = {
     "FLOAT",
     "COMMENT",
     "SPACE",
+    "TAB",
     "PRE_INCEREMENT",
     "PRE_DECREMENT",
-};
+    "STRING"};
 
 #define NUM_KEYWORDS 17
 const string keywords[17] = {
@@ -144,7 +147,10 @@ bool belongsToFirstIdentifierAlphabet(int character);
 bool belongsToIdentifierAlphabet(int character);
 bool isNonZeroInteger(int character);
 bool isStartingNumberDigit(int character);
-// const string getTokenName(int token_code);
+
+bool belongsToFirstCharacterSetOfIndentifierRE(char character);
+bool belongsToIndentifierCharacterSet(char character);
+bool belongstoNumbersCharacterSet(char character);
 
 #ifdef __cplusplus
 }

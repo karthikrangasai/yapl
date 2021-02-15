@@ -45,15 +45,29 @@
 	- [x] Float Literal Identifier
 	- [x] Operator Identifier
 	- [x] Skip Empty lines
-	- [x] Skip Comments: Doesn't work at all - Create a status flag or call reload buffer function (Need to create this function)
+	- [x] Skip Comments
 	- [ ] Check Indentation of blocks
-	- [ ] Change while loop to loop on SEARCHING state.
+	- [x] Change while loop to loop on SEARCHING state.
+	- [x] Add string data type
+	- [ ] Fex String RE : Gives error when "Hello worl\d"
 - [x] Token
 	- [x] Define tokens
 	- [x] functions for operators
 	- [x] functions for variable identifier
 	- [x] functions for function identifier
 - [ ] Error Correction of Code
+
+## Checking
+In theory we have a clean separation between lexer and parser: Lexer splits a text into a sequence of tokens and then the parser constructs a tree out of the tokens according to the grammar. Each component should throw an error if they are not able to complete its task. So a lexer should throw an error if it cannot produce a valid token (e.g. if there is an unclosed string, or a sequence of characters which is not a valid token), while grammatical errors from valid tokens should be detected by the parser.
+
+- Lexer errors:
+	- Incomplete Float. Eg: (0|[1-9][0-9]*)".", 
+	- Incorrect integers. Eg: 0[1-9]+, 
+	- Seeing the characters: [`$^\:"'?]
+
+((0|[1-9][0-9]*).0) | ((0|[1-9][0-9]*).([0-9]*[1-9]))
+
+(0|[1-9][0-9]*).(0|([0-9]*[1-9]))
 
 ## References
 - Check indentation

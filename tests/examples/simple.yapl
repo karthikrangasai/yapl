@@ -1,2 +1,6 @@
 function void::@main (void) {
+	float::num := 2.0;
+	integer::count := 100;
+	@printf("Hello World");
+	boolean::flag := true;
 } end_definition

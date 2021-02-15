@@ -22,5 +22,20 @@ int main(int argc, char const* argv[]) {
 
     runParser(parser);
 
+    if (parser->lexerErrors.empty()) {
+        // Print tokens
+        unsigned int numTokens = parser->tokenList.size();
+        // int filenameLength = parser->lexer->fileName.size();
+        for (unsigned int i = 0; i < numTokens; ++i) {
+            printTokenMessage(parser->tokenList[i]);
+        }
+    } else {
+        // print errors
+        unsigned int numLexerErros = parser->lexerErrors.size();
+        for (unsigned int i = 0; i < numLexerErros; ++i) {
+            parser->lexerErrors[i]->print(parser->lexer->fileName);
+        }
+    }
+
     return 0;
 }

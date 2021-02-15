@@ -15,10 +15,12 @@ extern "C" {
 typedef struct Parser {
     Lexer* lexer;
     vector<Token*> tokenList;
+    vector<LexerError*> lexerErrors;
 
     Parser(string filename) {
         lexer = initLexer(filename);
         tokenList = vector<Token*>();
+        lexerErrors = vector<LexerError*>();
     }
 } Parser;
 

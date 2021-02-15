@@ -74,10 +74,12 @@ TOKEN_TYPE getTokenTypeUsingOneChar(int character) {
         case ' ':
             return SPACE;
             break;
+        case '\t':
+            return TAB;
+            break;
         case '\n':
             return NEWLINE;
             break;
-
         default:
             return ERROR;
             break;
@@ -160,4 +162,16 @@ bool isNonZeroInteger(int character) {
 
 bool isStartingNumberDigit(int character) {
     return (isNonZeroInteger(character) || character == '0');
+}
+
+bool belongsToFirstCharacterSetOfIndentifierRE(char character) {
+    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character == '_'));
+}
+
+bool belongsToIndentifierCharacterSet(char character) {
+    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9') || (character == '_'));
+}
+
+bool belongstoNumbersCharacterSet(char character) {
+    return ((character >= '0' && character <= '9') || (character == '.'));
 }
