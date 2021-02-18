@@ -1,0 +1,7 @@
+while (flag) {
+	++count;
+} end
+
+for (integer::i := 0; i < length; ++i) {
+	@print(arr[i]);
+} end

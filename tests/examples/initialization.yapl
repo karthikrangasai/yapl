@@ -1,0 +1,15 @@
+integer::number := 420;
+
+float::pi := 3.14;
+
+boolean::flag := true;
+
+string::s := "Hello world\n";
+
+integer::primes_less_then_20[8] := [2, 3, 5, 7, 11, 13, 17, 19];
+
+float::sine_values[5] := [0.0, 0.5, 0.707, 0.866, 1.0];
+
+boolean::flags[6] := [true, false, true, false, false, true];
+
+string::conversation[4] := ["This", "is", "an", "example"];

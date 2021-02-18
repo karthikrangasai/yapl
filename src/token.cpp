@@ -38,6 +38,10 @@ TOKEN_TYPE getTokenTypeUsingOneChar(int character) {
             return EQUAL;
             break;
 
+        case '!':
+            return LOGICAL_NOT;
+            break;
+
         case '(':
             return LEFT_PAREN;
             break;
@@ -89,6 +93,20 @@ TOKEN_TYPE getTokenTypeUsingOneChar(int character) {
 
 TOKEN_TYPE getTokenTypeUsingTwoChar(int char1, int char2) {
     switch (char1) {
+        case '&': {
+            switch (char2) {
+                case '&':
+                    return LOGICAL_AND;
+            }
+        }
+
+        case '|': {
+            switch (char2) {
+                case '|':
+                    return LOGICAL_OR;
+            }
+        }
+
         case '<': {
             switch (char2) {
                 case '<':

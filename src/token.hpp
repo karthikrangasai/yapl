@@ -2,6 +2,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <iomanip>
+#include <iostream>
 #include <string>
 using namespace std;
 
@@ -24,34 +26,37 @@ typedef enum TOKEN_TYPE {
     GREATER_OR_EQUAL = 11,
     LESS = 12,
     GREATER = 13,
-    EQUAL = 14,
-    NOTEQUAL = 15,
-    BINDING = 16,
-    ASSIGNMENT = 17,
-    LEFT_PAREN = 18,
-    RIGHT_PAREN = 19,
-    LEFT_SQUARE_BR = 20,
-    RIGHT_SQUARE_BR = 21,
-    LEFT_FLOWER_BR = 22,
-    RIGHT_FLOWER_BR = 23,
-    COMMA = 24,
-    SEMI_COLON = 25,
-    COLON = 26,
-    NEWLINE = 27,
-    INDENT = 28,
-    DEDENT = 29,
-    KEYWORD = 30,
-    VAR_IDENTIFIER = 31,
-    AT_THE_RATE = 32,
-    FUNC_IDENTIFIER = 33,
-    INTEGER = 34,
-    FLOAT = 35,
-    COMMENT = 36,
-    SPACE = 37,
-    TAB = 38,
-    PRE_INCEREMENT = 39,
-    PRE_DECREMENT = 40,
-    STRING = 41,
+    LOGICAL_NOT = 14,
+    LOGICAL_AND = 15,
+    LOGICAL_OR = 16,
+    EQUAL = 17,
+    NOTEQUAL = 18,
+    BINDING = 19,
+    ASSIGNMENT = 20,
+    LEFT_PAREN = 21,
+    RIGHT_PAREN = 22,
+    LEFT_SQUARE_BR = 23,
+    RIGHT_SQUARE_BR = 24,
+    LEFT_FLOWER_BR = 25,
+    RIGHT_FLOWER_BR = 26,
+    COMMA = 27,
+    SEMI_COLON = 28,
+    COLON = 29,
+    NEWLINE = 30,
+    INDENT = 31,
+    DEDENT = 32,
+    KEYWORD = 33,
+    VAR_IDENTIFIER = 34,
+    AT_THE_RATE = 35,
+    FUNC_IDENTIFIER = 36,
+    INTEGER = 37,
+    FLOAT = 38,
+    COMMENT = 39,
+    SPACE = 40,
+    TAB = 41,
+    PRE_INCEREMENT = 42,
+    PRE_DECREMENT = 43,
+    STRING = 44,
     ERROR = 420
 } TOKEN_TYPE;
 
@@ -61,7 +66,7 @@ typedef enum TOKEN_TYPE {
 #define NUM_TOKENS 38
 #define NT_OFFSET 256
 
-const char* const token_names[42] = {
+const char* const token_names[45] = {
     "BITWISE_NOT",
     "BITWISE_AND",
     "BITWISE_OR",
@@ -76,6 +81,9 @@ const char* const token_names[42] = {
     "GREATER_OR_EQUAL",
     "LESS",
     "GREATER",
+    "LOGICAL_NOT",
+    "LOGICAL_AND",
+    "LOGICAL_OR",
     "EQUAL",
     "NOTEQUAL",
     "BINDING",
@@ -103,7 +111,8 @@ const char* const token_names[42] = {
     "TAB",
     "PRE_INCEREMENT",
     "PRE_DECREMENT",
-    "STRING"};
+    "STRING",
+};
 
 #define NUM_KEYWORDS 17
 const string keywords[17] = {
@@ -137,6 +146,13 @@ typedef struct Token {
         token = token_type;
         token_name = token_names[token_type];
         lexeme = string(lexeme_string);
+    }
+
+    void print() {
+        cout << "Line Number: " << setw(3) << line_number << ", ";
+        cout << "Token Code: " << setw(3) << token << ", ";
+        cout << "Token type: " << left << setw(16) << token_name << right << ", ";
+        cout << "Lexeme: " << lexeme << "\n";
     }
 } Token;
 

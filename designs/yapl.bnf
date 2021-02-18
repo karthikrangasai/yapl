@@ -1,51 +1,49 @@
 <program>					::= <functions>
 <functions>					::= <functions> <function> | <function> | <main>
 
-<function> 					::= "function" <return_type> "::" <function_identifier> <space_indent> "(" <function_parameters> ")" <space_indent> "{\n" <compound_statements> "}" <space_indent> "end_definition\n"
-<main> 						::= "function" <return_type> "::@main (" <function_parameters> ") {\n" <compound_statements> "} end_definition"
+<function> 					::= "function" <return_type> "::" <function_identifier>  "(" <function_parameters> ")"  "{\n" <compound_statements> "}"  "end_definition\n"
 <function_parameters>		::= <parameters> | "void"
-<parameters> 				::= <parameter> | <parameter> "," <space_indent> <parameters>
+<parameters> 				::= <parameter> | <parameter> ","  <parameters>
 <parameter>					::= <data_type> "::" <identifier>
 
 <compound_statements> 		::= <statement> <compound_statements> | <statement>
-<statement> 				::= <block_statements> | <single_line_statements>
+<statement> 				::= <block_statements> | <single_line_statement> ";\n"
 
-<block_statements>			::= <block_statement> <space_indent> "end\n"
+<block_statements>			::= <block_statement>  "end\n"
 <block_statement>			::= <conditional_statements> | <loop_statements>
-<conditional_statements> 	::=   "if" <space_indent> "(" <logical_expression> ")" <space_indent> "{\n" <compound_statements> "}"
-								| "if" <space_indent> "(" <logical_expression> ")" <space_indent> "{\n" <compound_statements> "}" <space_indent> "else" <space_indent> "{\n" <compound_statements> "}"
-<loop_statements> 			::=   "for" <space_indent> "(" <initialization_statement> <space_indent> ";" <space_indent> <logical_expression> <space_indent> ";" <space_indent> <numeric_expression> ")" <space_indent> "{\n" <compound_statements> "}"
-								| "while" <space_indent> "(" <logical_expression> ")" <space_indent> "{\n" <compound_statements> "}"
+<conditional_statements> 	::=   "if"  "(" <logical_expression> ")"  "{\n" <compound_statements> "}"
+								| "if"  "(" <logical_expression> ")"  "{\n" <compound_statements> "}"  "else"  "{\n" <compound_statements> "}"
+<loop_statements> 			::=   "for"  "(" <initialization_statement>  ";"  <logical_expression>  ";"  <numeric_expression> ")"  "{\n" <compound_statements> "}"
+								| "while"  "(" <logical_expression> ")"  "{\n" <compound_statements> "}"
 
-<single_line_statements> 	::= <single_line_statement> <dedent> | <new_line>
 <single_line_statement>  	::= <break_statements> | <function_call> | <initialization_statements> | <arith_statement>
-<break_statements> 			::= "break" | "continue" | "return" <space_indent> <expression>
+<break_statements> 			::= "break" | "continue" | "return"  <expression>
 <function_call> 			::= <function_identifier> "(" <arguements> ")"
-<arguements> 				::= <expression> | <expression> "," <space_indent> <arguements> | "void"
+<arguements> 				::= "void" | <string> | <expression> | <string> ","  <arguements> | <expression> "," <arguements>
 
-<initialization_statements> 	::= <declaration_statement> | <initialization_statement>
-<initialization_statement> 	::=   <declaration_statement> <space_indent> ":=" <space_indent> <initial_value>
-								| <termimal_expression> <space_indent> ":=" <space_indent> <initial_value>
+<initialization_statements> ::= <declaration_statement> | <initialization_statement>
+<initialization_statement> 	::=   <declaration_statement>  ":="  <initial_value>
+								| <termimal_expression>  ":="  <initial_value>
 <declaration_statement> 	::= <data_type> "::" <termimal_expression> | <data_type> "::" <termimal_expressions>
-<termimal_expressions> 		::= <termimal_expression> "," <space_indent> <termimal_expressions> | <termimal_expression>
-<initial_value> 			::= <expression> | "[" <array_initial_value> "]"
-<array_initial_value> 		::= <initial_value> | <initial_value> "," <space_indent> <array_initial_value>
+<termimal_expressions> 		::= <termimal_expression> ","  <termimal_expressions> | <termimal_expression>
+<initial_value> 			::= <expression> | "[" <array_initial_value> "]" | <string>
+<array_initial_value> 		::= <initial_value> | <initial_value> ","  <array_initial_value>
 
 <expression> 				::= <logical_expression> | <numeric_expression>
-<logical_expression>		::= <disjunction_expression> | <logical_expression> <space_indent> <rel_eq_op> <space_indent> <logical_expression>
-<disjunction_expression>	::= <conjunction_expression> | <disjunction_expression> <space_indent> "||" <space_indent> <disjunction_expression>
-<conjunction_expression>	::= <negation_expression> | <conjunction_expression> <space_indent> "&&" <space_indent> <conjunction_expression>
+<logical_expression>		::= <disjunction_expression> | <logical_expression>  <rel_eq_op>  <logical_expression>
+<disjunction_expression>	::= <conjunction_expression> | <disjunction_expression> "||"  <disjunction_expression>
+<conjunction_expression>	::= <negation_expression> | <conjunction_expression> "&&"  <conjunction_expression>
 <negation_expression>		::= <logical_braket_expression> | "!" <negation_expression>
 <logical_braket_expression>	::= <relational_expression> | "(" <logical_expression> ")"
-<relational_expression>		::= "(" <relational_expression> ")" | <termimal_expression> | <boolean> | <numeric_expression> <space_indent> <rel_op> <space_indent> <numeric_expression>
+<relational_expression>		::= "(" <relational_expression> ")" | <termimal_expression> | <boolean> | <numeric_expression>  <rel_op>  <numeric_expression>
 <numeric_expression>     	::= <subtraction_expression> | <arith_statement>
-<subtraction_expression> 	::= <addition_expression> | <subtraction_expression> <space_indent> "-" <space_indent> <subtraction_expression>
-<addition_expression>    	::= <multiplication_expression> | <addition_expression> <space_indent> "+" <space_indent> <addition_expression>
-<multiplication_expression>     ::= <division_expression> | <multiplication_expression> <space_indent> "*" <space_indent> <multiplication_expression>
-<division_expression> 		::= <float> | <modular_expression> | <division_expression> <space_indent> "/" <space_indent> <division_expression>
-<modular_expression> 		::= <bitwise_or_expression> | <modular_expression> <space_indent> "%" <space_indent> <modular_expression>
-<bitwise_or_expression>		::= <bitwise_and_expression> | <bitwise_or_expression> <space_indent> "|" <space_indent> <bitwise_or_expression>
-<bitwise_and_expression>	::= <bitwise_neg_expression> | <bitwise_and_expression> <space_indent> "&" <space_indent> <bitwise_and_expression>
+<subtraction_expression> 	::= <addition_expression> | <subtraction_expression>  "-"  <subtraction_expression>
+<addition_expression>    	::= <multiplication_expression> | <addition_expression>  "+"  <addition_expression>
+<multiplication_expression>     ::= <division_expression> | <multiplication_expression>  "*"  <multiplication_expression>
+<division_expression> 		::= <float> | <modular_expression> | <division_expression>  "/"  <division_expression>
+<modular_expression> 		::= <bitwise_or_expression> | <modular_expression>  "%"  <modular_expression>
+<bitwise_or_expression>		::= <bitwise_and_expression> | <bitwise_or_expression>  "|"  <bitwise_or_expression>
+<bitwise_and_expression>	::= <bitwise_neg_expression> | <bitwise_and_expression>  "&"  <bitwise_and_expression>
 <bitwise_neg_expression> 	::= <numeric_braket_expression> | "~" <bitwise_neg_expression>
 <numeric_braket_expression>	::= <integer> | <termimal_expression> | "(" <numeric_expression> ")"
 
@@ -54,17 +52,11 @@
 <termimal_expression> 		::= <identifier> | <array_identifier> | <function_call>
 <array_identifier> 			::= <identifier> "[" <integer> "]" | <identifier> "[" <identifier> "]" | <identifier> "[" <array_identifier> "]"
 
-<space_indent>				::= " "
-<indent>					::= "\t"
-<dedent>					::= ";" <new_line>
-<new_line>					::= "\n"
-
-
 <arith_u_op>				::= "++" | "--"
 <rel_eq_op>					::=  "=/=" | "="
 <rel_ineq_op>				::= ">" | "<" | ">=" | "<="
 <return_type>				::= <data_type> | "void"
-<data_type>					::= "boolean" | "integer" | "float"
+<data_type>					::= "boolean" | "integer" | "float" | "string"
 <boolean>					::= "true" | "false"
 
 <identifier>				::= [a-zA-Z][_a-zA-Z0-9]*
@@ -75,5 +67,7 @@
 <negative_integer>			::= "-" <positive_integer>
 
 <float>						::= <positive_float> | <negative_float> | "0.0"
-<positive_float>			::= (0 | [1-9][0-9]*).([0-9]*[1-9])
+<positive_float>			::= (0 | [1-9][0-9]*).(0 | ([0-9]*[1-9]))
 <negative_float>			::= "-" <positive_float>
+
+<string>					::= '["](.*)["]'

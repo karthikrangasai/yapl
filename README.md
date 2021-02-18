@@ -1,16 +1,12 @@
-main.c
-	-> parser.c(File) => Request Tokens
-	-> lexer.c(File)
-		-> init_lexer
-		-> getNextToken
-			-> Token or Error
+# YAPL - Yet Another Programming Language
 
-	-> print Everything
-
-./a.out file.etc
-
-What do you want to do?
-1) Show a single error and cut [Wins!!]
-2) Show all errors
-
-
+## Language Description
+- **KEYWORDS**: void, boolean, true, false, integer, float, if, else, for, while, end, function, end_definition, @main, break, continue, return
+- **OPERATORS**: ~, &, |, %, /, *, +, -, =, =/=, <=, >=, <, >, !, &&, ||, ::, :=
+- **DELIMITERS**: [], {}, (), ;, ,
+- **IDENTIFIERS**:
+	- **VARIABLE IDENTIFIERS**: [a-zA-Z][_a-zA-Z0-9]*
+	- **FUNCTION IDENTIFIERS**: @[a-zA-Z][_a-zA-Z0-9]*
+- **INTEGER LITERALS**: 0 | [1-9][0-9]* 
+- **FLOAT LITERALS**: ( 0 | [1-9][0-9]* ).( 0 | ([0-9]*[1-9]) )
+- **STRING LITERALS**: "(.|\n)*"

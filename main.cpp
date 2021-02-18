@@ -13,29 +13,19 @@ int main(int argc, char const* argv[]) {
         printf("Invalid inputs being provided.\n");
         return 1;
     }
-
-    // Check filename
-    // Send filename to parser
-    string filename = string(argv[1]);
-
-    Parser* parser = initializeParser(filename);
-
+    string inputFilename = string(argv[1]);
+    Parser* parser = initializeParser(inputFilename);
     runParser(parser);
-
     if (parser->lexerErrors.empty()) {
-        // Print tokens
         unsigned int numTokens = parser->tokenList.size();
-        // int filenameLength = parser->lexer->fileName.size();
         for (unsigned int i = 0; i < numTokens; ++i) {
-            printTokenMessage(parser->tokenList[i]);
+            parser->tokenList[i]->print();
         }
     } else {
-        // print errors
         unsigned int numLexerErros = parser->lexerErrors.size();
         for (unsigned int i = 0; i < numLexerErros; ++i) {
             parser->lexerErrors[i]->print(parser->lexer->fileName);
         }
     }
-
     return 0;
 }

@@ -68,7 +68,6 @@ typedef struct LexerError {
     }
 } LexerError;
 
-// void printError(Error error);
 enum LEXER_STATE {
     SEARCHING,
     FOUND_TOKEN,
@@ -178,6 +177,7 @@ typedef struct Lexer {
             bufferLen = buffer.size();
             emptyBuffer = (bufferLen == 0);
             ++lineNumber;
+            reachedEOF = source_file.eof();
         }
         currPtr = lookAheadPtr = 0;
     }

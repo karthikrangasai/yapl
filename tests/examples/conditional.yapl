@@ -1,0 +1,9 @@
+if (a < b) {
+	@print(a);
+} end
+
+if (2 > 4) {
+	@print("2 is greater than 4\n");
+} else {
+	@print("2 is less than or equal to 4\n");
+} end

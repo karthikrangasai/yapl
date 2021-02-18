@@ -317,13 +317,15 @@ void _getNextTokenHelper(Lexer* lexer) {
                     case LESS: {  // '<' => Maybe '<<' or '<=' or just simply '<'
 
                         // Check for '<<' or '<='
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
-                        if (new_token_type == LEFT_SHIFT || new_token_type == LESS_OR_EQUAL) {
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
-                            lexer->updateCurrPtr(2);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;  // Break from swtich
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == LEFT_SHIFT || new_token_type == LESS_OR_EQUAL) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;  // Break from swtich
+                            }
                         }
 
                         // '<' only
@@ -337,13 +339,15 @@ void _getNextTokenHelper(Lexer* lexer) {
                     case GREATER: {  // '>' => Maybe '>>' or '>=' or just simply '>'
 
                         // Check for '>>' or '>='
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
-                        if (new_token_type == RIGHT_SHIFT || new_token_type == GREATER_OR_EQUAL) {
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
-                            lexer->updateCurrPtr(2);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == RIGHT_SHIFT || new_token_type == GREATER_OR_EQUAL) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
                         }
 
                         // '>' only
@@ -357,16 +361,15 @@ void _getNextTokenHelper(Lexer* lexer) {
                     case ADD: {  // ':' => Maybe '++'
 
                         // Check for '++'
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
-                        if (new_token_type == PRE_INCEREMENT) {
-                            string s;
-                            s.push_back(buffer[lexer->lookAheadPtr]);
-                            s.push_back(buffer[lexer->lookAheadPtr + 1]);
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, s);
-                            lexer->updateCurrPtr(2);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == PRE_INCEREMENT) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
                         }
 
                         // '+' only
@@ -380,16 +383,15 @@ void _getNextTokenHelper(Lexer* lexer) {
                     case SUBTRACT: {  // '-' => Maybe '--'
 
                         // Check for '--'
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
-                        if (new_token_type == PRE_DECREMENT) {
-                            string s;
-                            s.push_back(buffer[lexer->lookAheadPtr]);
-                            s.push_back(buffer[lexer->lookAheadPtr + 1]);
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, s);
-                            lexer->updateCurrPtr(2);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == PRE_DECREMENT) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
                         }
 
                         // '-' only
@@ -400,16 +402,62 @@ void _getNextTokenHelper(Lexer* lexer) {
                         break;
                     }
 
+                    case BITWISE_AND: {  // '&' => Maybe '&&'
+
+                        // Check for '&&'
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == LOGICAL_AND) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
+                        }
+
+                        // '&' only
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->updateCurrPtr(1);
+                        lexer->updateLookAheadPtr();
+                        lexer->foundToken();
+                        break;
+                    }
+
+                    case BITWISE_OR: {  // '|' => Maybe '||'
+
+                        // Check for '|'
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == LOGICAL_OR) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
+                        }
+
+                        // '|' only
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->updateCurrPtr(1);
+                        lexer->updateLookAheadPtr();
+                        lexer->foundToken();
+                        break;
+                    }
+
                     case EQUAL: {  // '=' => Maybe '=/=' or just simply '='
 
                         // Check for '=/=' TOKEN
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingThreeChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1], buffer[lexer->lookAheadPtr + 2]);
-                        if (new_token_type == NOTEQUAL) {
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 3));
-                            lexer->updateCurrPtr(3);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;
+                        if (((lexer->lookAheadPtr + 1) < lexer->bufferLen && ((lexer->lookAheadPtr + 2) < lexer->bufferLen))) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingThreeChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1], buffer[lexer->lookAheadPtr + 2]);
+                            if (new_token_type == NOTEQUAL) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 3));
+                                lexer->updateCurrPtr(3);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
                         }
 
                         // '=/=' didn't happen
@@ -429,16 +477,15 @@ void _getNextTokenHelper(Lexer* lexer) {
                     case COLON: {  // ':' => Maybe '::' or ':=' or Syntax Error
 
                         // Check for '::' or ':='
-                        TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
-                        if (new_token_type == ASSIGNMENT || new_token_type == BINDING) {
-                            string s;
-                            s.push_back(buffer[lexer->lookAheadPtr]);
-                            s.push_back(buffer[lexer->lookAheadPtr + 1]);
-                            lexer->currentToken = new Token(lexer->lineNumber, new_token_type, s);
-                            lexer->updateCurrPtr(2);
-                            lexer->updateLookAheadPtr();
-                            lexer->foundToken();
-                            break;
+                        if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
+                            TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
+                            if (new_token_type == ASSIGNMENT || new_token_type == BINDING) {
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->updateCurrPtr(2);
+                                lexer->updateLookAheadPtr();
+                                lexer->foundToken();
+                                break;
+                            }
                         }
                     }
 

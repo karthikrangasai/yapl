@@ -1,13 +1,14 @@
-function void::@fibonacci(integer::n){
-    integer::fib[1000];
-    fib[0]:=0;
-    fib[1]:=1;
-    for(integer::i:=2;i<=n;--i){
-        fib[i] := (fib[i-1] + fib[i-2])%mod;
-    }
-    return fib[n];
-} end_definition
-
-function void::@main (void) {
-    @fibonacci(100);
+function void::@sieve(integer::N){
+	integer::spf[1 << 15];
+	for(integer::i := 0 ; i <= N ; ++i) {
+		spf[i] := i;
+	} end
+	for(integer::i := 2 ; (i * i) <= N ; ++i) {
+		if(spf[i] == i) {
+			for(integer:: j := (i * i) ; j <= N ; j := (j + i)) {
+				spf[j] := @min(spf[j], i);
+			} end
+		} end
+	} end
+	return void;
 } end_definition

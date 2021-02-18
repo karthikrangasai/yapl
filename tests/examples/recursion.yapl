@@ -11,6 +11,6 @@ function void::@main (void) {
 	while (x <= 10){
 		@write(x);
 		@write(@factorial(x));
-		@writeln("NCBD);
-	}
+		@writeln();
+	} end
 } end_definition
