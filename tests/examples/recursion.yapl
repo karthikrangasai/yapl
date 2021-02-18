@@ -1,11 +1,16 @@
 function integer::@factorial (integer::n) {
-	if (n=0) {
+	if (n<=1) {
 		return 1;
 	} end
 	return n*@factorial(n-1);
 } end_definition
 
 function void::@main (void) {
-	integer::a:=20;
-	@factorial(a);
+	integer::x;
+	x := 1;
+	while (x <= 10){
+		@write(x);
+		@write(@factorial(x));
+		@writeln("NCBD);
+	}
 } end_definition

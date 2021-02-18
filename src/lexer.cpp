@@ -245,11 +245,19 @@ Token* getAppropriateToken(Lexer* lexer) {
 }
 
 /*	function: _getNextTokenHelper()
-	We have to read each the buffer char by char
+	We have to read the buffer character by character
 	Then for each char:
-		if char belongs to [a-zA-Z]:
-			then check str[currPtr, lookAheadPtr]
-			Then find full identifer and return IDENTIFIER / KEYWORD token
+		if char is ":
+			Maybe string literal
+		else if char belongs to [a-zA-Z]:
+			Maybe an identifier
+		else if char belongs to [0-9]:
+			Maybe an identifier
+		else:
+			Any other token like operators
+		
+		then check str[currPtr, lookAheadPtr]
+		Then find full identifer and return IDENTIFIER / KEYWORD token
 		else:
 			Find it's TOKEN_TYPE and act accordingly
 	Don't forget to update the lookAheadPtr.
@@ -260,28 +268,21 @@ void _getNextTokenHelper(Lexer* lexer) {
     while (lexer->isSearching()) {
         // Not sure what we are going to see
         if (lexer->currentLiteralState == NO_LITERAL) {
-            if (buffer[lexer->lookAheadPtr] == '\"') {
-                // string data type
+            if (buffer[lexer->lookAheadPtr] == '\"') {  // string data type
                 lexer->currentLiteralState = STRING_LITERAL;
                 lexer->stringState = STRING_STATE_ONE;
-                lexer->stringStart = true;
                 lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, 1);
                 ++lexer->lookAheadPtr;
-            } else if (belongsToFirstCharacterSetOfIndentifierRE(buffer[lexer->lookAheadPtr])) {
-                // Checks for RE: [a-zA-Z]
+            } else if (belongsToFirstCharacterSetOfIndentifierRE(buffer[lexer->lookAheadPtr])) {  // Checks for RE: [a-zA-Z]
                 ++lexer->lookAheadPtr;
-                // Keep looking until [_a-zA-Z0-9]
-                while (belongsToIndentifierCharacterSet(buffer[lexer->lookAheadPtr])) {
+                while (belongsToIndentifierCharacterSet(buffer[lexer->lookAheadPtr])) {  // Keep looking until [_a-zA-Z0-9]
                     ++lexer->lookAheadPtr;
                 }
                 lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, (lexer->lookAheadPtr - lexer->currPtr));
                 lexer->currentLiteralState = VARIABLE_LITERAL;
-                // lexer->updateCurrPtr(0);
-            } else if (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {
-                // check for [0-9]
+            } else if (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {  // check for [0-9]
                 ++lexer->lookAheadPtr;
-                // Keep looking until [.0-9]
-                while (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {
+                while (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {  // Keep looking until [.0-9]
                     ++lexer->lookAheadPtr;
                 }
                 lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, (lexer->lookAheadPtr - lexer->currPtr));
@@ -292,7 +293,6 @@ void _getNextTokenHelper(Lexer* lexer) {
                 }
             } else {
                 TOKEN_TYPE token_type = getTokenTypeUsingOneChar(buffer[lexer->lookAheadPtr]);
-
                 switch (token_type) {
                     case AT_THE_RATE: {
                         ++lexer->lookAheadPtr;
@@ -468,7 +468,7 @@ void _getNextTokenHelper(Lexer* lexer) {
             }  // Don't write code after this in this block
         } else if (lexer->currentLiteralState == STRING_LITERAL) {
             // Buf: "Hello world\uBye"
-            // LAP:             ^
+            // LAP:                  ^
             // Cur: ^
             if (lexer->stringState == STRING_STATE_ONE) {
                 if (lexer->lookAheadPtr >= lexer->bufferLen) {
@@ -485,7 +485,6 @@ void _getNextTokenHelper(Lexer* lexer) {
                     ++lexer->lookAheadPtr;
                 } else if (buffer[lexer->lookAheadPtr] == '\"') {
                     lexer->stringState = STRING_STATE_END;
-                    lexer->stringStart = false;
                     lexer->identifierTokenBuffer.push_back(buffer[lexer->lookAheadPtr]);
                     ++lexer->lookAheadPtr;
                 } else {
@@ -500,14 +499,19 @@ void _getNextTokenHelper(Lexer* lexer) {
                 } else {
                     // NCBD => Error
                     lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_STRING, lexer->buffer, (lexer->lookAheadPtr - lexer->currPtr + 1));
+                    ++lexer->lookAheadPtr;
+                    lexer->stringState = STRING_STATE_ONE;
+                }
+            } else if (lexer->stringState == STRING_STATE_END) {
+                if ((lexer->currentLexerError != NULL) && (lexer->currentLexerError->errorType == INVALID_STRING)) {
+                    lexer->currentLexerError->errorLength = (lexer->lookAheadPtr - lexer->currPtr);
+                    lexer->currentLexerError->buffer = lexer->buffer;
                     lexer->updateCurrPtr(1);
                     lexer->updateLookAheadPtr();
                     lexer->errorOccured();
                     lexer->currentLiteralState = NO_LITERAL;
                     lexer->stringState = STRING_STATE_START;
-                }
-            } else if (lexer->stringState == STRING_STATE_END) {
-                if (lexer->lookAheadPtr - lexer->currPtr > 0) {
+                } else if (lexer->lookAheadPtr - lexer->currPtr > 0) {
                     lexer->currentToken = new Token(lexer->lineNumber, STRING, string(lexer->identifierTokenBuffer));
                     lexer->updateCurrPtr(0);
                     lexer->updateLookAheadPtr();

@@ -46,10 +46,10 @@
 	- [x] Operator Identifier
 	- [x] Skip Empty lines
 	- [x] Skip Comments
-	- [ ] Check Indentation of blocks
 	- [x] Change while loop to loop on SEARCHING state.
 	- [x] Add string data type
-	- [ ] Fex String RE : Gives error when "Hello worl\d"
+	- [x] Fix String RE : Gives error when "Hello worl\d"
+	- [ ] O(n^2) -> O(n)
 - [x] Token
 	- [x] Define tokens
 	- [x] functions for operators
@@ -64,6 +64,7 @@ In theory we have a clean separation between lexer and parser: Lexer splits a te
 	- Incomplete Float. Eg: (0|[1-9][0-9]*)".", 
 	- Incorrect integers. Eg: 0[1-9]+, 
 	- Seeing the characters: [`$^\:"'?]
+	- Not matching double quotes for strings or invalid excape sequences
 
 ((0|[1-9][0-9]*).0) | ((0|[1-9][0-9]*).([0-9]*[1-9]))
 

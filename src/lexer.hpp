@@ -56,15 +56,15 @@ typedef struct LexerError {
             cout << "Invalid string format.\n";
         }
         cout << "  " << lineNumber << " | " << buffer << "\n";
-        cout << "  " << lineNumber << " | ";
-        for (unsigned int i = 0; i < columnNumber; ++i) {
-            cout << " ";
-        }
-        cout << "^";
-        for (unsigned int i = 0; i < (errorLength - 1); ++i) {
-            cout << "~";
-        }
-        cout << "\n";
+        // cout << "  " << lineNumber << " | ";
+        // for (unsigned int i = 0; i < columnNumber; ++i) {
+        //     cout << " ";
+        // }
+        // cout << "^";
+        // for (unsigned int i = 0; i < (errorLength - 1); ++i) {
+        //     cout << "~";
+        // }
+        // cout << "\n";
     }
 } LexerError;
 
@@ -90,6 +90,31 @@ enum STRING_STATE {
     STRING_STATE_ONE,
     STRING_STATE_TWO,
     STRING_STATE_END,
+    STRING_STATE_ERROR
+};
+
+enum INTEGER_STATE {
+    INTEGER_STATE_START,
+    INTEGER_STATE_ONE,
+    INTEGER_STATE_TWO,
+    INTEGER_STATE_END,
+    INTEGER_STATE_TRAP
+};
+
+enum FLOAT_STATE {
+    FLOAT_STATE_START,
+    FLOAT_STATE_ONE,
+    FLOAT_STATE_TWO,
+    FLOAT_STATE_END,
+    FLOAT_STATE_TRAP
+};
+
+enum IDENTIFIER_STATE {
+    IDENTIFIER_STATE_START,
+    IDENTIFIER_STATE_ONE,
+    IDENTIFIER_STATE_TWO,
+    IDENTIFIER_STATE_END,
+    IDENTIFIER_STATE_TRAP
 };
 
 typedef struct Lexer {
@@ -101,7 +126,12 @@ typedef struct Lexer {
     unsigned int lineNumber;
     unsigned int bufferLen;
 
+    STRING_STATE stringState;
+    INTEGER_STATE integerState;
+    FLOAT_STATE floatState;
+    IDENTIFIER_STATE identifierState;
     LITERAL_STATE currentLiteralState;
+
     string identifierTokenBuffer;
     Token* currentToken;
     LEXER_STATE lexerState;
@@ -109,8 +139,6 @@ typedef struct Lexer {
 
     stack<int> indentationStack;
 
-    STRING_STATE stringState;
-    bool stringStart;
     bool emptyBuffer;
     bool reachedEOF;
 
@@ -122,16 +150,18 @@ typedef struct Lexer {
         lineNumber = 0;
         bufferLen = 0;
 
+        stringState = STRING_STATE_START;
+        integerState = INTEGER_STATE_START;
+        floatState = FLOAT_STATE_START;
+        identifierState = IDENTIFIER_STATE_START;
         currentLiteralState = NO_LITERAL;
+
         identifierTokenBuffer = "";
         currentToken = NULL;
         lexerState = SEARCHING;
         currentLexerError = NULL;
 
         indentationStack = stack<int>();
-
-        stringState = STRING_STATE_START;
-        stringStart = false;
 
         emptyBuffer = true;
         reachedEOF = false;
