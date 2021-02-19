@@ -9,12 +9,14 @@ void runParser(Parser* parser) {
     do {
         getNextToken(parser->lexer);
         if (parser->lexer->lexerState == FOUND_TOKEN) {
-            Token* token = new Token(*(parser->lexer->currentToken));
-            parser->tokenList.push_back(token);
+            // Token* token = new Token(*(parser->lexer->currentToken));
+            // parser->tokenList.push_back(token);
+            parser->tokenList.push_back(parser->lexer->currentToken);
             parser->lexer->resetGotToken();
         } else if (parser->lexer->lexerState == ERROR_OCCURED) {
-            LexerError* lexerError = new LexerError(*(parser->lexer->currentLexerError));
-            parser->lexerErrors.push_back(lexerError);
+            // LexerError* lexerError = new LexerError(*(parser->lexer->currentLexerError));
+            // parser->lexerErrors.push_back(lexerError);
+            parser->lexerErrors.push_back(parser->lexer->currentLexerError);
             parser->lexer->reseterrorOccured();
         }
     } while (!(parser->lexer->reachedEOF && ((parser->lexer->currPtr >= parser->lexer->bufferLen))));

@@ -56,15 +56,15 @@ typedef struct LexerError {
             cout << "Invalid string format.\n";
         }
         cout << "  " << lineNumber << " | " << buffer << "\n";
-        // cout << "  " << lineNumber << " | ";
-        // for (unsigned int i = 0; i < columnNumber; ++i) {
-        //     cout << " ";
-        // }
-        // cout << "^";
-        // for (unsigned int i = 0; i < (errorLength - 1); ++i) {
-        //     cout << "~";
-        // }
-        // cout << "\n";
+        cout << "  " << lineNumber << " | ";
+        for (unsigned int i = 0; i < columnNumber; ++i) {
+            cout << " ";
+        }
+        cout << "^";
+        for (unsigned int i = 0; i < (errorLength - 1); ++i) {
+            cout << "~";
+        }
+        cout << "\n";
     }
 } LexerError;
 
@@ -200,6 +200,7 @@ typedef struct Lexer {
 
     void resetGotToken() {
         lexerState = SEARCHING;
+        currentToken = NULL;
     }
 
     void errorOccured() {
@@ -208,6 +209,7 @@ typedef struct Lexer {
 
     void reseterrorOccured() {
         lexerState = SEARCHING;
+        currentLexerError = NULL;
     }
 } Lexer;
 

@@ -166,20 +166,8 @@ TOKEN_TYPE getTokenTypeUsingThreeChar(int char1, int char2, int char3) {
     return ERROR;
 }
 
-bool belongsToFirstIdentifierAlphabet(int character) {
-    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z'));
-}
-
-bool belongsToIdentifierAlphabet(int character) {
-    return ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9') || (character == '_'));
-}
-
-bool isNonZeroInteger(int character) {
-    return (character >= '1' && character <= '9');
-}
-
-bool isStartingNumberDigit(int character) {
-    return (isNonZeroInteger(character) || character == '0');
+bool isNumber(int character) {  //
+    return (character >= '0' && character <= '9');
 }
 
 bool belongsToFirstCharacterSetOfIndentifierRE(char character) {

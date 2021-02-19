@@ -159,11 +159,8 @@ typedef struct Token {
 TOKEN_TYPE getTokenTypeUsingOneChar(int character);
 TOKEN_TYPE getTokenTypeUsingTwoChar(int, int);
 TOKEN_TYPE getTokenTypeUsingThreeChar(int, int, int);
-bool belongsToFirstIdentifierAlphabet(int character);
-bool belongsToIdentifierAlphabet(int character);
-bool isNonZeroInteger(int character);
-bool isStartingNumberDigit(int character);
 
+bool isNumber(int character);
 bool belongsToFirstCharacterSetOfIndentifierRE(char character);
 bool belongsToIndentifierCharacterSet(char character);
 bool belongstoNumbersCharacterSet(char character);

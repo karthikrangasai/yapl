@@ -15,43 +15,6 @@ bool isKeyword(string identifier) {
     return false;
 }
 
-void string_start_state(char character, int* state) {
-    if (character == '\"') {
-        *state = 1;
-    } else {
-        *state = -1;
-    }
-}
-void string_state_1(char character, int* state) {
-    if (character == '\\') {  // check for '\'
-        *state = 2;
-    } else if (character == '\"') {
-        *state = 0;
-    }
-}
-void string_state_2(char character, int* state) {
-    if (character == '\'' || character == '\"' || character == '\\' || character == 'n' || character == 'r' || character == 't' || character == 'b' || character == 'f' || character == 'v' || character == '0') {
-        *state = 1;
-    } else {
-        *state = -1;
-    }
-}
-bool isStringLiteral(string identifier) {
-    int state = 0;
-    for (int i = 0; i < (int)identifier.size(); i++) {
-        if (state == 0) {
-            string_start_state(identifier[i], &state);
-        } else if (state == 1) {  // FINAL STATE
-            string_state_1(identifier[i], &state);
-        } else if (state == 2) {
-            string_state_2(identifier[i], &state);
-        } else if (state == -1) {  // TRAP STATE
-            return false;
-        }
-    }
-    return (state == 0);
-}
-
 void variable_start_state(char character, int* state) {
     if ((character >= 'a' and character <= 'z') or (character >= 'A' and character <= 'Z'))
         *state = 1;
@@ -280,7 +243,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                 }
                 lexer->identifierTokenBuffer = buffer.substr(lexer->currPtr, (lexer->lookAheadPtr - lexer->currPtr));
                 lexer->currentLiteralState = VARIABLE_LITERAL;
-            } else if (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {  // check for [0-9]
+            } else if (isNumber(buffer[lexer->lookAheadPtr])) {  // check for [0-9]
                 ++lexer->lookAheadPtr;
                 while (belongstoNumbersCharacterSet(buffer[lexer->lookAheadPtr])) {  // Keep looking until [.0-9]
                     ++lexer->lookAheadPtr;
