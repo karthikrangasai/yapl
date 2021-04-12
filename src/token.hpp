@@ -49,14 +49,14 @@ typedef enum TOKEN_TYPE {
     VAR_IDENTIFIER = 34,
     AT_THE_RATE = 35,
     FUNC_IDENTIFIER = 36,
-    INTEGER = 37,
-    FLOAT = 38,
+    INTEGER_TOKEN = 37,
+    FLOAT_TOKEN = 38,
     COMMENT = 39,
     SPACE = 40,
     TAB = 41,
     PRE_INCEREMENT = 42,
     PRE_DECREMENT = 43,
-    STRING = 44,
+    STRING_TOKEN = 44,
     ERROR = 420
 } TOKEN_TYPE;
 
@@ -136,7 +136,7 @@ const string keywords[17] = {
 };
 
 typedef struct Token {
-    int line_number;
+    unsigned int line_number;
     TOKEN_TYPE token;
     string token_name;
     string lexeme;

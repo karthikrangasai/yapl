@@ -1,73 +1,73 @@
-<program>					::= <functions>
-<functions>					::= <functions> <function> | <function> | <main>
+<PROGRAM>					::= <FUNCTIONS>
+<FUNCTIONS>					::= <FUNCTIONS> <FUNCTION> | <FUNCTION> | <MAIN>
 
-<function> 					::= "function" <return_type> "::" <function_identifier>  "(" <function_parameters> ")"  "{\n" <compound_statements> "}"  "end_definition\n"
-<function_parameters>		::= <parameters> | "void"
-<parameters> 				::= <parameter> | <parameter> ","  <parameters>
-<parameter>					::= <data_type> "::" <identifier>
+<FUNCTION> 					::= "function" <RETURN_TYPE> "::" <FUNCTION_IDENTIFIER>  "(" <FUNCTION_PARAMETERS> ")"  "{\n" <COMPOUND_STATEMENTS> "}"  "end_definition\n"
+<FUNCTION_PARAMETERS>		::= <PARAMETERS> | "void"
+<PARAMETERS> 				::= <PARAMETER> | <PARAMETER> ","  <PARAMETERS>
+<PARAMETER>					::= <DATA_TYPE> "::" <IDENTIFIER>
 
-<compound_statements> 		::= <statement> <compound_statements> | <statement>
-<statement> 				::= <block_statements> | <single_line_statement> ";\n"
+<COMPOUND_STATEMENTS> 		::= <STATEMENT> <COMPOUND_STATEMENTS> | <STATEMENT>
+<STATEMENT> 				::= <BLOCK_STATEMENTS> | <SINGLE_LINE_STATEMENT> ";\n"
 
-<block_statements>			::= <block_statement>  "end\n"
-<block_statement>			::= <conditional_statements> | <loop_statements>
-<conditional_statements> 	::=   "if"  "(" <logical_expression> ")"  "{\n" <compound_statements> "}"
-								| "if"  "(" <logical_expression> ")"  "{\n" <compound_statements> "}"  "else"  "{\n" <compound_statements> "}"
-<loop_statements> 			::=   "for"  "(" <initialization_statement>  ";"  <logical_expression>  ";"  <numeric_expression> ")"  "{\n" <compound_statements> "}"
-								| "while"  "(" <logical_expression> ")"  "{\n" <compound_statements> "}"
+<BLOCK_STATEMENTS>			::= <BLOCK_STATEMENT>  "end\n"
+<BLOCK_STATEMENT>			::= <CONDITIONAL_STATEMENTS> | <LOOP_STATEMENTS>
+<CONDITIONAL_STATEMENTS> 	::=   "if"  "(" <LOGICAL_EXPRESSION> ")"  "{\n" <COMPOUND_STATEMENTS> "}"
+								| "if"  "(" <LOGICAL_EXPRESSION> ")"  "{\n" <COMPOUND_STATEMENTS> "}"  "else"  "{\n" <COMPOUND_STATEMENTS> "}"
+<LOOP_STATEMENTS> 			::=   "for"  "(" <INITIALIZATION_STATEMENT>  ";"  <LOGICAL_EXPRESSION>  ";"  <NUMERIC_EXPRESSION> ")"  "{\n" <COMPOUND_STATEMENTS> "}"
+								| "while"  "(" <LOGICAL_EXPRESSION> ")"  "{\n" <COMPOUND_STATEMENTS> "}"
 
-<single_line_statement>  	::= <break_statements> | <function_call> | <initialization_statements> | <arith_statement>
-<break_statements> 			::= "break" | "continue" | "return"  <expression>
-<function_call> 			::= <function_identifier> "(" <arguements> ")"
-<arguements> 				::= "void" | <string> | <expression> | <string> ","  <arguements> | <expression> "," <arguements>
+<SINGLE_LINE_STATEMENT>  	::= <BREAK_STATEMENTS> | <FUNCTION_CALL> | <INITIALIZATION_STATEMENTS> | <ARITH_STATEMENT>
+<BREAK_STATEMENTS> 			::= "break" | "continue" | "return"  <EXPRESSION> | "return" "void"
+<FUNCTION_CALL> 			::= <FUNCTION_IDENTIFIER> "(" <ARGUEMENTS> ")"
+<ARGUEMENTS> 				::= "void" | <STRING> | <EXPRESSION> | <STRING> ","  <ARGUEMENTS> | <EXPRESSION> "," <ARGUEMENTS>
 
-<initialization_statements> ::= <declaration_statement> | <initialization_statement>
-<initialization_statement> 	::=   <declaration_statement>  ":="  <initial_value>
-								| <termimal_expression>  ":="  <initial_value>
-<declaration_statement> 	::= <data_type> "::" <termimal_expression> | <data_type> "::" <termimal_expressions>
-<termimal_expressions> 		::= <termimal_expression> ","  <termimal_expressions> | <termimal_expression>
-<initial_value> 			::= <expression> | "[" <array_initial_value> "]" | <string>
-<array_initial_value> 		::= <initial_value> | <initial_value> ","  <array_initial_value>
+<INITIALIZATION_STATEMENTS> ::= <DECLARATION_STATEMENT> | <INITIALIZATION_STATEMENT>
+<INITIALIZATION_STATEMENT> 	::=   <DECLARATION_STATEMENT>  ":="  <INITIAL_VALUE>
+								| <TERMIMAL_EXPRESSION>  ":="  <INITIAL_VALUE>
+<DECLARATION_STATEMENT> 	::= <DATA_TYPE> "::" <TERMIMAL_EXPRESSION> | <DATA_TYPE> "::" <TERMIMAL_EXPRESSIONS>
+<TERMIMAL_EXPRESSIONS> 		::= <TERMIMAL_EXPRESSION> ","  <TERMIMAL_EXPRESSIONS> | <TERMIMAL_EXPRESSION>
+<INITIAL_VALUE> 			::= <EXPRESSION> | "[" <ARRAY_INITIAL_VALUE> "]" | <STRING>
+<ARRAY_INITIAL_VALUE> 		::= <INITIAL_VALUE> | <INITIAL_VALUE> ","  <ARRAY_INITIAL_VALUE>
 
-<expression> 				::= <logical_expression> | <numeric_expression>
-<logical_expression>		::= <disjunction_expression> | <logical_expression>  <rel_eq_op>  <logical_expression>
-<disjunction_expression>	::= <conjunction_expression> | <disjunction_expression> "||"  <disjunction_expression>
-<conjunction_expression>	::= <negation_expression> | <conjunction_expression> "&&"  <conjunction_expression>
-<negation_expression>		::= <logical_braket_expression> | "!" <negation_expression>
-<logical_braket_expression>	::= <relational_expression> | "(" <logical_expression> ")"
-<relational_expression>		::= "(" <relational_expression> ")" | <termimal_expression> | <boolean> | <numeric_expression>  <rel_op>  <numeric_expression>
-<numeric_expression>     	::= <subtraction_expression> | <arith_statement>
-<subtraction_expression> 	::= <addition_expression> | <subtraction_expression>  "-"  <subtraction_expression>
-<addition_expression>    	::= <multiplication_expression> | <addition_expression>  "+"  <addition_expression>
-<multiplication_expression>     ::= <division_expression> | <multiplication_expression>  "*"  <multiplication_expression>
-<division_expression> 		::= <float> | <modular_expression> | <division_expression>  "/"  <division_expression>
-<modular_expression> 		::= <bitwise_or_expression> | <modular_expression>  "%"  <modular_expression>
-<bitwise_or_expression>		::= <bitwise_and_expression> | <bitwise_or_expression>  "|"  <bitwise_or_expression>
-<bitwise_and_expression>	::= <bitwise_neg_expression> | <bitwise_and_expression>  "&"  <bitwise_and_expression>
-<bitwise_neg_expression> 	::= <numeric_braket_expression> | "~" <bitwise_neg_expression>
-<numeric_braket_expression>	::= <integer> | <termimal_expression> | "(" <numeric_expression> ")"
+<EXPRESSION> 				::= <LOGICAL_EXPRESSION> | <NUMERIC_EXPRESSION>
+<LOGICAL_EXPRESSION>		::= <DISJUNCTION_EXPRESSION> | <LOGICAL_EXPRESSION>  <REL_EQ_OP>  <LOGICAL_EXPRESSION>
+<DISJUNCTION_EXPRESSION>	::= <CONJUNCTION_EXPRESSION> | <DISJUNCTION_EXPRESSION> "||"  <DISJUNCTION_EXPRESSION>
+<CONJUNCTION_EXPRESSION>	::= <NEGATION_EXPRESSION> | <CONJUNCTION_EXPRESSION> "&&"  <CONJUNCTION_EXPRESSION>
+<NEGATION_EXPRESSION>		::= <LOGICAL_BRAKET_EXPRESSION> | "!" <NEGATION_EXPRESSION>
+<LOGICAL_BRAKET_EXPRESSION>	::= <RELATIONAL_EXPRESSION> | "(" <LOGICAL_EXPRESSION> ")"
+<RELATIONAL_EXPRESSION>		::= "(" <RELATIONAL_EXPRESSION> ")" | <TERMIMAL_EXPRESSION> | <BOOLEAN> | <NUMERIC_EXPRESSION>  <REL_OP>  <NUMERIC_EXPRESSION>
+<NUMERIC_EXPRESSION>     	::= <SUBTRACTION_EXPRESSION> | <ARITH_STATEMENT>
+<SUBTRACTION_EXPRESSION> 	::= <ADDITION_EXPRESSION> | <SUBTRACTION_EXPRESSION>  "-"  <SUBTRACTION_EXPRESSION>
+<ADDITION_EXPRESSION>    	::= <MULTIPLICATION_EXPRESSION> | <ADDITION_EXPRESSION>  "+"  <ADDITION_EXPRESSION>
+<MULTIPLICATION_EXPRESSION>     ::= <DIVISION_EXPRESSION> | <MULTIPLICATION_EXPRESSION>  "*"  <MULTIPLICATION_EXPRESSION>
+<DIVISION_EXPRESSION> 		::= <FLOAT> | <MODULAR_EXPRESSION> | <DIVISION_EXPRESSION>  "/"  <DIVISION_EXPRESSION>
+<MODULAR_EXPRESSION> 		::= <BITWISE_OR_EXPRESSION> | <MODULAR_EXPRESSION>  "%"  <MODULAR_EXPRESSION>
+<BITWISE_OR_EXPRESSION>		::= <BITWISE_AND_EXPRESSION> | <BITWISE_OR_EXPRESSION>  "|"  <BITWISE_OR_EXPRESSION>
+<BITWISE_AND_EXPRESSION>	::= <BITWISE_NEG_EXPRESSION> | <BITWISE_AND_EXPRESSION>  "&"  <BITWISE_AND_EXPRESSION>
+<BITWISE_NEG_EXPRESSION> 	::= <NUMERIC_BRAKET_EXPRESSION> | "~" <BITWISE_NEG_EXPRESSION>
+<NUMERIC_BRAKET_EXPRESSION>	::= <INTEGER> | <TERMIMAL_EXPRESSION> | "(" <NUMERIC_EXPRESSION> ")"
 
-<arith_statement> 			::= <arith_u_op> <numeric_expression>
-<rel_op> 					::= <rel_eq_op> | <rel_ineq_op>
-<termimal_expression> 		::= <identifier> | <array_identifier> | <function_call>
-<array_identifier> 			::= <identifier> "[" <integer> "]" | <identifier> "[" <identifier> "]" | <identifier> "[" <array_identifier> "]"
+<ARITH_STATEMENT> 			::= <ARITH_U_OP> <NUMERIC_EXPRESSION>
+<REL_OP> 					::= <REL_EQ_OP> | <REL_INEQ_OP>
+<TERMIMAL_EXPRESSION> 		::= <IDENTIFIER> | <ARRAY_IDENTIFIER> | <FUNCTION_CALL>
+<ARRAY_IDENTIFIER> 			::= <IDENTIFIER> "[" <INTEGER> "]" | <IDENTIFIER> "[" <IDENTIFIER> "]" | <IDENTIFIER> "[" <ARRAY_IDENTIFIER> "]"
 
-<arith_u_op>				::= "++" | "--"
-<rel_eq_op>					::=  "=/=" | "="
-<rel_ineq_op>				::= ">" | "<" | ">=" | "<="
-<return_type>				::= <data_type> | "void"
-<data_type>					::= "boolean" | "integer" | "float" | "string"
-<boolean>					::= "true" | "false"
+<ARITH_U_OP>				::= "++" | "--"
+<REL_EQ_OP>					::=  "=/=" | "="
+<REL_INEQ_OP>				::= ">" | "<" | ">=" | "<="
+<RETURN_TYPE>				::= <DATA_TYPE> | "void"
+<DATA_TYPE>					::= "boolean" | "integer" | "float" | "string"
+<BOOLEAN>					::= "true" | "false"
 
-<identifier>				::= [a-zA-Z][_a-zA-Z0-9]*
-<function_identifier>		::= @[a-zA-Z][_a-zA-Z0-9]*
+<IDENTIFIER>				::= [A-ZA-Z][_A-ZA-Z0-9]*
+<FUNCTION_IDENTIFIER>		::= @[A-ZA-Z][_A-ZA-Z0-9]*
 
-<integer>					::= <positive_integer> | <negative_integer> | "0"
-<positive_integer>			::= [1-9][0-9]*
-<negative_integer>			::= "-" <positive_integer>
+<INTEGER>					::= <POSITIVE_INTEGER> | <NEGATIVE_INTEGER>
+<POSITIVE_INTEGER>			::= 0 | [1-9][0-9]*
+<NEGATIVE_INTEGER>			::= "-" <POSITIVE_INTEGER>
 
-<float>						::= <positive_float> | <negative_float> | "0.0"
-<positive_float>			::= (0 | [1-9][0-9]*).(0 | ([0-9]*[1-9]))
-<negative_float>			::= "-" <positive_float>
+<FLOAT>						::= <POSITIVE_FLOAT> | <NEGATIVE_FLOAT>
+<POSITIVE_FLOAT>			::= (0 | [1-9][0-9]*).(0 | ([0-9]*[1-9]))
+<NEGATIVE_FLOAT>			::= "-" <POSITIVE_FLOAT>
 
-<string>					::= '["](.*)["]'
+<STRING>					::= '["](.*)["]'

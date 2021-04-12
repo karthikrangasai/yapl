@@ -15,17 +15,20 @@ int main(int argc, char const* argv[]) {
     }
     string inputFilename = string(argv[1]);
     Parser* parser = initializeParser(inputFilename);
-    runParser(parser);
-    if (parser->lexerErrors.empty()) {
-        unsigned int numTokens = parser->tokenList.size();
-        for (unsigned int i = 0; i < numTokens; ++i) {
-            parser->tokenList[i]->print();
-        }
-    } else {
-        unsigned int numLexerErros = parser->lexerErrors.size();
-        for (unsigned int i = 0; i < numLexerErros; ++i) {
-            parser->lexerErrors[i]->print(parser->lexer->fileName);
-        }
-    }
+
+    // generateParseTable(parser);
+
+    // runParser(parser);
+    // if (parser->lexerErrors.empty()) {
+    //     unsigned int numTokens = parser->tokenList.size();
+    //     for (unsigned int i = 0; i < numTokens; ++i) {
+    //         parser->tokenList[i]->print();
+    //     }
+    // } else {
+    //     unsigned int numLexerErros = parser->lexerErrors.size();
+    //     for (unsigned int i = 0; i < numLexerErros; ++i) {
+    //         parser->lexerErrors[i]->print(parser->lexer->fileName);
+    //     }
+    // }
     return 0;
 }

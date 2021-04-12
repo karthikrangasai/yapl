@@ -193,10 +193,10 @@ Token* getAppropriateToken(Lexer* lexer) {
                 string(lexer->identifierTokenBuffer));
         }
         case INTEGER_LITERAL: {
-            return new Token(lexer->lineNumber, INTEGER, string(lexer->identifierTokenBuffer));
+            return new Token(lexer->lineNumber, INTEGER_TOKEN, string(lexer->identifierTokenBuffer));
         }
         case FLOAT_LITERAL: {
-            return new Token(lexer->lineNumber, FLOAT, string(lexer->identifierTokenBuffer));
+            return new Token(lexer->lineNumber, FLOAT_TOKEN, string(lexer->identifierTokenBuffer));
         }
         case STRING_LITERAL:
         case NO_LITERAL: {
@@ -522,7 +522,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                     lexer->currentLiteralState = NO_LITERAL;
                     lexer->stringState = STRING_STATE_START;
                 } else if (lexer->lookAheadPtr - lexer->currPtr > 0) {
-                    lexer->currentToken = new Token(lexer->lineNumber, STRING, string(lexer->identifierTokenBuffer));
+                    lexer->currentToken = new Token(lexer->lineNumber, STRING_TOKEN, string(lexer->identifierTokenBuffer));
                     lexer->updateCurrPtr(0);
                     lexer->updateLookAheadPtr();
                     lexer->foundToken();
@@ -565,7 +565,7 @@ void _getNextTokenHelper(Lexer* lexer) {
         } else if (lexer->currentLiteralState == INTEGER_LITERAL) {
             bool isValid = isIntegerLiteral(lexer, lexer->identifierTokenBuffer);
             if (isValid) {
-                lexer->currentToken = new Token(lexer->lineNumber, INTEGER, string(lexer->identifierTokenBuffer));
+                lexer->currentToken = new Token(lexer->lineNumber, INTEGER_TOKEN, string(lexer->identifierTokenBuffer));
                 lexer->foundToken();
             } else {
                 lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_INTEGER, lexer->buffer, lexer->identifierTokenBuffer.size());
@@ -577,7 +577,7 @@ void _getNextTokenHelper(Lexer* lexer) {
         } else if (lexer->currentLiteralState == FLOAT_LITERAL) {
             bool isValid = isFloatLiteral(lexer, lexer->identifierTokenBuffer);
             if (isValid) {
-                lexer->currentToken = new Token(lexer->lineNumber, FLOAT, string(lexer->identifierTokenBuffer));
+                lexer->currentToken = new Token(lexer->lineNumber, FLOAT_TOKEN, string(lexer->identifierTokenBuffer));
                 lexer->foundToken();
             } else {
                 lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_FLOAT, lexer->buffer, lexer->identifierTokenBuffer.size());

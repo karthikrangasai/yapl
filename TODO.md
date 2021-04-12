@@ -78,3 +78,15 @@ Check `./tests/examples/` directory for the examples.
 		- [Reddit Answer](https://www.reddit.com/r/ProgrammingLanguages/comments/7gvdje/any_advice_on_how_to_implement_the_pythonindent/)
 		- [Python Way](https://docs.python.org/3/reference/lexical_analysis.html#lexical-analysis)
 		- [Blog Post](https://jayconrod.com/posts/101/how-python-parses-white-space)
+
+
+
+# Phase 2
+- [ ] Add Assignment_Numeric_Expr for FOR LOOP
+- [ ] Remove left and right shift operator
+- [ ] Remove recursions
+
+- [x] Add Prod rule reader
+- [x] Add first set computing function
+- [ ] Add follow set computing function
+- [ ] Parse table generation
