@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <stack>
 
 #include "lexer.hpp"
 using namespace std;
@@ -133,6 +134,7 @@ enum TERMINALS {
     END_KEYWORD,
     IF_KEYWORD,
     ELSE_KEYWORD,
+    END_MARKER,
 };
 
 const unsigned int numTerminals = 0;
@@ -184,6 +186,7 @@ const vector<string> terminal_names = {
     "END_KEYWORD",
     "IF_KEYWORD",
     "ELSE_KEYWORD",
+    "END_MARKER",
 };
 
 /**
@@ -378,6 +381,11 @@ enum ParserTokenType {
 typedef struct ParserTypeValue {
     TERMINALS terminal;
     NON_TERMINALS nonTerminal;
+    ParserTypeValue() {}
+    ParserTypeValue(TERMINALS terminal, NON_TERMINALS nonTerminal) {
+        this->terminal = terminal;
+        this->nonTerminal = nonTerminal;
+    }
 
     const bool operator==(const ParserTypeValue& other) const {
         return tie(this->terminal, this->nonTerminal) == tie(other.terminal, other.nonTerminal);
@@ -393,6 +401,9 @@ typedef struct ParserTypeValue {
 } ParserTypeValue;
 
 typedef pair<ParserTokenType, ParserTypeValue> ppp;
+
+const ppp EPSILON = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::EMPTY, NON_TERMINALS::NONE_NON_TERMINAL));
+const ppp _END_MARKER = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::END_MARKER, NON_TERMINALS::NONE_NON_TERMINAL));
 
 /**
  * @brief A single production rule in the grammar that defines what a Non-Terminal exapnds to.
@@ -415,19 +426,35 @@ typedef struct ProductionRule {
         this->lhs = lhs;
         this->rhs = vector<pair<ParserTokenType, ParserTypeValue>>();
     }
+
+    void print() {
+        if (this->lhs.first == ParserTokenType::TERMINAL) {
+            cout << terminal_names[this->lhs.second.terminal];
+        } else {
+            cout << non_terminal_names[this->lhs.second.nonTerminal];
+        }
+
+        cout << " -> ";
+
+        if (this->rhs[0].first == ParserTokenType::TERMINAL) {
+            cout << terminal_names[this->rhs[0].second.terminal];
+        } else {
+            cout << non_terminal_names[this->rhs[0].second.nonTerminal];
+        }
+    }
 } ProductionRule;
 
 /**
  * @brief 
  */
 typedef struct ParserNode {
-    ParserTokenType type;
-    ParserTypeValue value;
+    ppp lexerValueTokenTypeIdentifier;
+    // ParserTokenType type;
+    // ParserTypeValue value;
     Token* lexerToken;
 
-    ParserNode(ParserTokenType type, ParserTypeValue value, Token* lexerToken) {
-        this->type = type;
-        this->value = value;
+    ParserNode(ppp lexerValueTokenTypeIdentifier, Token* lexerToken) {
+        this->lexerValueTokenTypeIdentifier = lexerValueTokenTypeIdentifier;
         this->lexerToken = lexerToken;
     }
 } ParserNode;
@@ -446,9 +473,11 @@ typedef struct Parser {
     // First Set
     // map<pair<ParserTokenType, ParserTypeValue>, vector<pair<ParserTokenType, ParserTypeValue>>> firstSet;
     map<ppp, vector<ppp>> firstSet;
-
+    map<ppp, vector<ppp>> followSet;
+    map<ppp, map<ppp, vector<ProductionRule>>> parseTable;
     // Follow Set
     // Parse Table
+    vector<ppp> parseStack;
 
     Parser(string filename) {
         this->lexer = initLexer(filename);
@@ -457,6 +486,10 @@ typedef struct Parser {
         this->lexerErrors = vector<LexerError*>();
         this->grammarRules = vector<ProductionRule>();
         this->firstSet = map<ppp, vector<ppp>>();
+        this->followSet = map<ppp, vector<ppp>>();
+        this->parseStack = vector<ppp>();
+        this->parseStack.push_back(_END_MARKER);
+        // this->parseStack.push_back(make_pair(ParserTokenType::NON_TERMINAL, ParserTypeValue(TERMINALS::NONE_TERMINAL, NON_TERMINALS::PROGRAM)));
     }
 } Parser;
 
@@ -536,6 +569,7 @@ bool collectFirsts4(map<ppp, vector<ppp>>&, vector<ppp>&, vector<ppp>&);
 
 void generateFirstSets(Parser*);
 
+vector<ppp> collectFirsts3(map<ppp, vector<ppp>>, vector<ppp>);
 void generateFollowSets(Parser*);
 
 void generateParseTable(Parser*);

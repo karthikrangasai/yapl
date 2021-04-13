@@ -129,7 +129,7 @@ const string keywords[17] = {
     "end",
     "function",
     "end_definition",
-    "@main",
+    // "@main",
     "break",
     "continue",
     "return",

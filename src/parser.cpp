@@ -4,35 +4,71 @@
  * 
  */
 #include <algorithm>
+#include <cassert>
 #include "parser.hpp"
 
-void printFirstTable(Parser* parser) {
-    freopen("firstSet2.txt", "w", stdout);
+void printFirstTable(Parser* parser, string filename, int flag) {
+    freopen(filename.c_str(), "w", stdout);
 
-    for (auto const& it : parser->firstSet) {
-        ppp key = it.first;
-        if (key.first == ParserTokenType::TERMINAL) {
-            cout << terminal_names[key.second.terminal];
-        } else {
-            cout << non_terminal_names[key.second.nonTerminal];
-        }
-
-        cout << "  -->  ";
-
-        vector<ppp> s = it.second;
-        cout << s.size() << "  {";
-        for (auto const& iit : s) {
-            if (iit.first == ParserTokenType::TERMINAL) {
-                cout << terminal_names[iit.second.terminal];
+    if (flag == 0) {
+        for (auto const& it : parser->firstSet) {
+            ppp key = it.first;
+            if (key.first == ParserTokenType::TERMINAL) {
+                cout << terminal_names[key.second.terminal];
             } else {
-                cout << non_terminal_names[iit.second.nonTerminal];
+                cout << non_terminal_names[key.second.nonTerminal];
             }
-            cout << ", ";
-        }
 
-        cout << "}" << endl
-             << endl;
+            cout << "  -->  ";
+
+            vector<ppp> s = it.second;
+            cout << s.size() << "  {";
+            for (auto const& iit : s) {
+                if (iit.first == ParserTokenType::TERMINAL) {
+                    cout << terminal_names[iit.second.terminal];
+                } else {
+                    cout << non_terminal_names[iit.second.nonTerminal];
+                }
+                cout << ", ";
+            }
+
+            cout << "}" << endl
+                 << endl;
+        }
+    } else if (flag == 1) {
+        for (auto const& it : parser->followSet) {
+            ppp key = it.first;
+            if (key.first == ParserTokenType::TERMINAL) {
+                cout << terminal_names[key.second.terminal];
+            } else {
+                cout << non_terminal_names[key.second.nonTerminal];
+            }
+
+            cout << "  -->  ";
+
+            vector<ppp> s = it.second;
+            cout << s.size() << "  {";
+            for (auto const& iit : s) {
+                if (iit.first == ParserTokenType::TERMINAL) {
+                    cout << terminal_names[iit.second.terminal];
+                } else {
+                    cout << non_terminal_names[iit.second.nonTerminal];
+                }
+                cout << ", ";
+            }
+
+            cout << "}" << endl
+                 << endl;
+        }
+    } else if (flag == 2) {
+        // Print parse table
+        // NT
+        // 		T : PR+
+
+        // for (auto const& it : parser->firstSet) {
+        // }
     }
+
     fclose(stdout);
 }
 
@@ -46,8 +82,22 @@ Parser* initializeParser(string filename) {
     Parser* parser = new Parser(filename);
     productionsRulesInit(parser);
     generateFirstSets(parser);
-    printFirstTable(parser);
+    // printFirstTable(parser, "firstSet2.txt", 0);
+    generateFollowSets(parser);
+    // printFirstTable(parser, "followSet2.txt", 1);
+    generateParseTable(parser);
+    // printFirstTable(parser, "parserTable2.txt", 2);
     return parser;
+}
+
+void printStackProductions(vector<ppp> stackInputs) {
+    for (auto it : stackInputs) {
+        if (it.first == ParserTokenType::TERMINAL)
+            cout << terminal_names[it.second.terminal] << " ";
+        else
+            cout << non_terminal_names[it.second.nonTerminal] << " ";
+    }
+    cout << endl;
 }
 
 void runParser(Parser* parser) {
@@ -69,6 +119,54 @@ void runParser(Parser* parser) {
     } while (!(parser->lexer->reachedEOF && ((parser->lexer->currPtr >= parser->lexer->bufferLen))));
 
     // You have all the details to run LL(1) Parser
+
+    unsigned int tokenIndex = 0;
+    parser->parseStack.push_back(parser->grammarRules[0].lhs);
+    ppp X = parser->parseStack.back();
+    ppp a = parser->parserTokenList[tokenIndex]->lexerValueTokenTypeIdentifier;
+    printStackProductions(parser->parseStack);
+    while (!(X == _END_MARKER)) {
+        if (X == a) {
+            // pop the stack and let a be the next symbol of w ;
+            parser->parseStack.pop_back();
+            ++tokenIndex;
+            if (tokenIndex < parser->parserTokenList.size()) {
+                a = parser->parserTokenList[tokenIndex]->lexerValueTokenTypeIdentifier;
+            } else {
+                a = _END_MARKER;
+            }
+
+        } else if (X.first == ParserTokenType::TERMINAL) {
+            if (X.second.terminal == TERMINALS::EMPTY) {
+                parser->parseStack.pop_back();
+            } else {
+                // error()
+                // ok case
+                cout << "Some GAY Terminal Error" << endl;
+            }
+        } else if (parser->parseTable[X][a].empty()) {
+            // error()
+            cout << endl
+                 << "-------------------TESTING-------------------" << endl;
+            for (auto it : parser->parseTable[X]) {
+                ppp f = it.first;
+                if (f.first == ParserTokenType::TERMINAL)
+                    cout << terminal_names[f.second.terminal] << " ";
+                else
+                    cout << non_terminal_names[f.second.nonTerminal] << " ";
+            }
+            cout << "Table Input is Empty" << endl;
+        } else if (!parser->parseTable[X][a].empty()) {
+            // output the production
+            parser->parseStack.pop_back();
+            vector<ppp> productions = parser->parseTable[X][a][0].rhs;
+            reverse(productions.begin(), productions.end());
+            parser->parseStack.insert(parser->parseStack.end(), productions.begin(), productions.end());
+        }
+        X = parser->parseStack.back();
+        printStackProductions(parser->parseStack);
+    }
+    //while (!(X == _END_MARKER));
 }
 
 // pair<string, string> _splitRule(string s) {
@@ -85,7 +183,7 @@ void productionsRulesInit(Parser* parser) {
     string ruleBuffer;
     getline(parser->rules_file, ruleBuffer);
     while (!(parser->rules_file.eof())) {
-        cout << ruleBuffer << endl;
+        // cout << ruleBuffer << endl;
         if (ruleBuffer != "") {
             size_t pos = ruleBuffer.find(" -> ");
             if (pos != string::npos) {
@@ -94,16 +192,16 @@ void productionsRulesInit(Parser* parser) {
 
                 // Debug print line
                 // cout << lhs << " -> " << rhs << endl;
-                ParserTypeValue lhsValue;
-                lhsValue.terminal = NONE_TERMINAL;
-                lhsValue.nonTerminal = convertStringToNT(lhs);
+                ParserTypeValue lhsValue(TERMINALS::NONE_TERMINAL, convertStringToNT(lhs));
+                // lhsValue.terminal = NONE_TERMINAL;
+                // lhsValue.nonTerminal = convertStringToNT(lhs);
                 ProductionRule pRule = ProductionRule(make_pair(ParserTokenType::NON_TERMINAL, lhsValue));
                 if (rhs == "\'\'") {
                     // EMPTY NT
-                    ParserTypeValue value;
-                    value.terminal = TERMINALS::EMPTY;
-                    value.nonTerminal = NONE_NON_TERMINAL;
-                    pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, value));
+                    // ParserTypeValue value;
+                    // value.terminal = TERMINALS::EMPTY;
+                    // value.nonTerminal = NONE_NON_TERMINAL;
+                    pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::EMPTY, NON_TERMINALS::NONE_NON_TERMINAL)));
                 } else {
                     vector<string> vs = split(rhs, " ");
 
@@ -111,13 +209,13 @@ void productionsRulesInit(Parser* parser) {
                     for (string& s : vs) {
                         ParserTypeValue value;
                         if (isElement(s, terminal_names)) {
-                            value.terminal = convertStringToT(s);
-                            value.nonTerminal = NONE_NON_TERMINAL;
-                            pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, value));
+                            // value.terminal = ;
+                            // value.nonTerminal = NONE_NON_TERMINAL;
+                            pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, ParserTypeValue(convertStringToT(s), NON_TERMINALS::NONE_NON_TERMINAL)));
                         } else if (isElement(s, non_terminal_names)) {
-                            value.terminal = NONE_TERMINAL;
-                            value.nonTerminal = convertStringToNT(s);
-                            pRule.rhs.push_back(make_pair(ParserTokenType::NON_TERMINAL, value));
+                            // value.terminal = NONE_TERMINAL;
+                            // value.nonTerminal = convertStringToNT(s);
+                            pRule.rhs.push_back(make_pair(ParserTokenType::NON_TERMINAL, ParserTypeValue(TERMINALS::NONE_TERMINAL, convertStringToNT(s))));
                         }
                     }
                 }
@@ -140,7 +238,8 @@ void productionsRulesInit(Parser* parser) {
 
 ParserNode* determineParserNode(Token* lexerToken) {
     ParserTokenType nodeType = ParserTokenType::TERMINAL;
-    ParserTypeValue terminalType;
+    ParserTypeValue terminalType(TERMINALS::NONE_TERMINAL, NON_TERMINALS::NONE_NON_TERMINAL);
+    // terminalType.nonTerminal = NONE_NON_TERMINAL;
     switch (lexerToken->token) {
         // case TOKEN_TYPE::BITWISE_NOT: {
         //     terminalType.terminal = TERMINALS::BITWISE_NOT_OPERATOR;
@@ -320,7 +419,8 @@ ParserNode* determineParserNode(Token* lexerToken) {
             // Error case
         }
     }
-    return new ParserNode(nodeType, terminalType, lexerToken);
+    assert(terminalType.terminal != TERMINALS::NONE_TERMINAL);
+    return new ParserNode(make_pair(nodeType, terminalType), lexerToken);
 }
 
 bool isElement(string element, vector<string> arr) {
@@ -365,11 +465,11 @@ void generateFirstSets(Parser* parser) {
 
     for (unsigned int i = 0; i < terminal_names.size(); ++i) {
         // cout << terminal_names[i] << endl;
-        ParserTypeValue keyValue;
-        keyValue.terminal = convertStringToT(terminal_names[i]);
-        keyValue.nonTerminal = NONE_NON_TERMINAL;
+        // ParserTypeValue keyValue;
+        // keyValue.terminal = convertStringToT(terminal_names[i]);
+        // keyValue.nonTerminal = NONE_NON_TERMINAL;
 
-        ppp p = make_pair(ParserTokenType::TERMINAL, keyValue);
+        ppp p = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(convertStringToT(terminal_names[i]), NON_TERMINALS::NONE_NON_TERMINAL));
         parser->firstSet[p] = {p};
     }
 
@@ -393,10 +493,10 @@ void generateFirstSets(Parser* parser) {
 
             vector<ppp> development = parser->grammarRules[i].rhs;
 
-            ParserTypeValue emptyValue;
-            emptyValue.terminal = TERMINALS::EMPTY;
-            emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-            ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
+            // ParserTypeValue emptyValue;
+            // emptyValue.terminal = TERMINALS::EMPTY;
+            // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
+            // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
 
             // if (development.size() == 1 && development[0] == EPSILON) {
             if (development.size() == 1 && development[0] == EPSILON) {
@@ -421,7 +521,7 @@ void generateFirstSets(Parser* parser) {
         // cout << endl
         //      << endl;
         ++count;
-        cout << "Done with all production rules: " << count << " times." << endl;
+        // cout << "Done with all production rules: " << count << " times." << endl;
     } while (notDone);
 }
 
@@ -438,10 +538,10 @@ bool addUnique(ppp element, vector<ppp>& arr) {
 }
 
 bool collectFirsts4(map<ppp, vector<ppp>>& firsts, vector<ppp>& development, vector<ppp>& nonterminalFirsts) {
-    ParserTypeValue emptyValue;
-    emptyValue.terminal = TERMINALS::EMPTY;
-    emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-    ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
+    // ParserTypeValue emptyValue;
+    // emptyValue.terminal = TERMINALS::EMPTY;
+    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
+    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
 
     bool result = false;
     bool epsilonInSymbolFirsts = true;
@@ -488,3 +588,159 @@ bool collectFirsts4(map<ppp, vector<ppp>>& firsts, vector<ppp>& development, vec
 // // Choose auto const &x when you want to work with original items and will not modify them.
 // #define forit(i, v) for (auto const& i = v)
 // 31657
+
+void generateFollowSets(Parser* parser) {
+    // ParserTypeValue emptyValue;
+    // emptyValue.terminal = TERMINALS::EMPTY;
+    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
+    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
+
+    // ParserTypeValue endMarkerValue;
+    // endMarkerValue.terminal = TERMINALS::NONE_TERMINAL;
+    // endMarkerValue.nonTerminal = NON_TERMINALS::END_MARKER;
+    // ppp _END_MARKER = make_pair(ParserTokenType::NON_TERMINAL, endMarkerValue);
+
+    bool notDone;
+
+    do {
+        notDone = false;
+
+        // for(auto const& rule : parser->grammarRules){
+        for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
+            ppp nonterminal = parser->grammarRules[i].lhs;
+            vector<ppp> development = parser->grammarRules[i].rhs;
+
+            if (i == 0) {
+                vector<ppp> nonterminalFollows = parser->followSet[nonterminal];
+
+                notDone |= addUnique(_END_MARKER, nonterminalFollows);
+
+                parser->followSet[nonterminal] = nonterminalFollows;
+            }
+
+            for (unsigned int j = 0; j < development.size(); ++j) {
+                ppp symbol = development[j];
+
+                // if (isElement(symbol, nonterminals)) {
+                if (symbol.first == ParserTokenType::NON_TERMINAL) {
+                    vector<ppp> symbolFollows = parser->followSet[symbol];
+
+                    // implement this
+                    // vs afterSymbolFirsts = collectFirsts3(vs(development.begin()+j+1, development.end()));
+                    vector<ppp> afterSymbolFirsts = collectFirsts3(parser->firstSet, vector<ppp>(development.begin() + j + 1, development.end()));
+
+                    for (unsigned int k = 0; k < afterSymbolFirsts.size(); ++k) {
+                        ppp first = afterSymbolFirsts[k];
+
+                        if (first == EPSILON) {
+                            vector<ppp> nonterminalFollows = parser->followSet[nonterminal];
+
+                            for (unsigned int l = 0; l < nonterminalFollows.size(); ++l) {
+                                notDone |= addUnique(nonterminalFollows[l], symbolFollows);
+                            }
+                        } else {
+                            notDone |= addUnique(first, symbolFollows);
+                        }
+                    }
+                    parser->followSet[symbol] = symbolFollows;
+                }
+            }
+        }
+    } while (notDone);
+}
+
+vector<ppp> collectFirsts3(map<ppp, vector<ppp>> firsts, vector<ppp> sequence) {
+    // ParserTypeValue emptyValue;
+    // emptyValue.terminal = TERMINALS::EMPTY;
+    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
+    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
+
+    vector<ppp> result;
+    bool epsilonInSymbolFirsts = true;
+
+    // for (auto j : sequence) {
+    for (unsigned int j = 0; j < sequence.size(); ++j) {
+        ppp symbol = sequence[j];
+        epsilonInSymbolFirsts = false;
+
+        if (symbol.first == ParserTokenType::TERMINAL) {
+            addUnique(symbol, result);
+            break;
+        }
+
+        for (auto const& k : firsts[symbol]) {
+            ppp first = k;
+
+            epsilonInSymbolFirsts |= (first == EPSILON);
+
+            addUnique(first, result);
+        }
+
+        epsilonInSymbolFirsts |= (!firsts.count(symbol) || firsts[symbol].empty());
+
+        if (!epsilonInSymbolFirsts) {
+            break;
+        }
+    }
+
+    if (epsilonInSymbolFirsts) {
+        addUnique(EPSILON, result);
+    }
+
+    return result;
+}
+
+void generateParseTable(Parser* parser) {
+    // ParserTypeValue emptyValue;
+    // emptyValue.terminal = TERMINALS::EMPTY;
+    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
+    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
+
+    for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
+        // vs rule = split(rules[i], "->");
+
+        // if (rule.size() < 2) {
+        //     cout << "KOTHI error";
+        //     continue;
+        // }
+
+        ppp nonterminal = parser->grammarRules[i].lhs;
+        // string tmp;
+        // stringstream str_strm(rule[1]);
+        vector<ppp> development = parser->grammarRules[i].rhs;
+        // while (str_strm >> tmp) {
+        //   development.push_back(tmp);
+        // }
+
+        vector<ppp> developmentFirsts = collectFirsts3(parser->firstSet, development);
+
+        for (unsigned int j = 0; j < developmentFirsts.size(); ++j) {
+            ppp symbol = developmentFirsts[j];
+
+            if (symbol != EPSILON) {
+                // parser->parseTable[nonterminal];
+                vector<ProductionRule> oldTableRule = parser->parseTable[nonterminal][symbol];
+
+                if (oldTableRule.empty()) {
+                    parser->parseTable[nonterminal][symbol].push_back(parser->grammarRules[i]);  // = rules[i];
+                } else {
+                    parser->parseTable[nonterminal][symbol].push_back(parser->grammarRules[i]);  // oldTableRule + "\n" + rules[i];
+                }
+            } else {
+                for (unsigned int j = 0; j < parser->followSet[nonterminal].size(); ++j) {
+                    ppp symbol2 = parser->followSet[nonterminal][j];
+
+                    // ruleTable[nonterminal];
+
+                    vector<ProductionRule> oldTableRule = parser->parseTable[nonterminal][symbol2];
+
+                    if (oldTableRule.empty()) {
+                        parser->parseTable[nonterminal][symbol2].push_back(parser->grammarRules[i]);  // = rules[i];
+                    } else {
+                        parser->parseTable[nonterminal][symbol2].push_back(parser->grammarRules[i]);  // = oldTableRule + "\n" + rules[i];
+                    }
+                }
+            }
+        }
+    }
+}

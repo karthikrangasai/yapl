@@ -18,7 +18,7 @@ int main(int argc, char const* argv[]) {
 
     // generateParseTable(parser);
 
-    // runParser(parser);
+    runParser(parser);
     // if (parser->lexerErrors.empty()) {
     //     unsigned int numTokens = parser->tokenList.size();
     //     for (unsigned int i = 0; i < numTokens; ++i) {
