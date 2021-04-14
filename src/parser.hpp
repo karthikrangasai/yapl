@@ -15,81 +15,13 @@
 #include "lexer.hpp"
 using namespace std;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
 
 /**
  * @brief List of all the Terminals
  */
-// enum TERMINALS {
-//     NONE_TERMINAL = -2,
-//     EMPTY = -1,
-
-//     BITWISE_NOT_OPERATOR,
-//     BITWISE_AND_OPERATOR,
-//     BITWISE_OR_OPERATOR,
-
-//     MODULO_OPERATOR,
-//     DIVISION_OPERATOR,
-//     MULTIPLICATION_OPERATOR,
-//     ADDITION_OPERATOR,
-//     SUBTRACTION_OPERATOR,
-
-//     LESS_THAN_EQUAL_OPERATOR,
-//     GREATER_THAN_EQUAL_OPERATOR,
-//     LESS_THAN_OPERATOR,
-//     GREATER_THAN_OPERATOR,
-//     EQAULITY_OPERATOR,
-//     INEQUALITY_OPERATOR,
-
-//     NOT_OPERATOR,
-//     OR_OPERATOR,
-//     AND_OPERATOR,
-
-//     BINDING_OPERATOR,
-//     ASSIGNMENT_OPERATOR,
-
-//     LEFT_PARENTHESES,
-//     RIGHT_PARENTHESES,
-//     LEFT_SQUARE_BRACKET,
-//     RIGHT_SQUARE_BRACKET,
-//     LEFT_FLOWER_BRACKET,
-//     RIGHT_FLOWER_BRACKET,
-
-//     COMMA_SEPARATOR,
-//     SEMI_COLON_SEPARATOR,
-
-//     IDENTIFIER,
-//     FUNCTION_IDENTIFIER,
-
-//     POSITIVE_INTEGER,
-//     POSITIVE_FLOAT,
-
-//     PRE_INCEREMENT_OPERATOR,
-//     PRE_DECEREMENT_OPERATOR,
-
-//     STRING,
-
-//     BOOLEAN_KEYWORD,
-//     BREAK_KEYWORD,
-//     CONTINUE_KEYWORD,
-//     ELSE_KEYWORD,
-//     END_DEFINITION_KEYWORD,
-//     END_KEYWORD,
-//     FALSE_KEYWORD,
-//     FLOAT_KEYWORD,
-//     FOR_KEYWORD,
-//     FUNTION_KEYWORD,
-//     IF_KEYWORD,
-//     INTEGER_KEYWORD,
-//     RETURN_KEYWORD,
-//     TRUE_KEYWORD,
-//     VOID_KEYWORD,
-//     WHILE_KEYWORD,
-//     STRING_KEYWORD,  // "string" => STRING_KEYWORD VAR_ID EQ STRING;
-// };
-
 enum TERMINALS {
     NONE_TERMINAL = -1,
     EMPTY,
@@ -103,8 +35,6 @@ enum TERMINALS {
     SUBTRACTION_OPERATOR,
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
-    LEFT_SQUARE_BRACKET,
-    RIGHT_SQUARE_BRACKET,
     LEFT_FLOWER_BRACKET,
     RIGHT_FLOWER_BRACKET,
     COMMA_SEPARATOR,
@@ -123,9 +53,6 @@ enum TERMINALS {
     GREATER_THAN_OPERATOR,
     EQAULITY_OPERATOR,
     INEQUALITY_OPERATOR,
-    NOT_OPERATOR,
-    OR_OPERATOR,
-    AND_OPERATOR,
     ASSIGNMENT_OPERATOR,
     BREAK_KEYWORD,
     CONTINUE_KEYWORD,
@@ -155,8 +82,6 @@ const vector<string> terminal_names = {
     "SUBTRACTION_OPERATOR",
     "LEFT_PARENTHESES",
     "RIGHT_PARENTHESES",
-    "LEFT_SQUARE_BRACKET",
-    "RIGHT_SQUARE_BRACKET",
     "LEFT_FLOWER_BRACKET",
     "RIGHT_FLOWER_BRACKET",
     "COMMA_SEPARATOR",
@@ -175,9 +100,6 @@ const vector<string> terminal_names = {
     "GREATER_THAN_OPERATOR",
     "EQAULITY_OPERATOR",
     "INEQUALITY_OPERATOR",
-    "NOT_OPERATOR",
-    "OR_OPERATOR",
-    "AND_OPERATOR",
     "ASSIGNMENT_OPERATOR",
     "BREAK_KEYWORD",
     "CONTINUE_KEYWORD",
@@ -189,81 +111,11 @@ const vector<string> terminal_names = {
     "END_MARKER",
 };
 
+// map<TERMINALS, string> terminalValueLookup;
+
 /**
  * @brief List of all the Non-Terminals.
  */
-// enum NON_TERMINALS {
-//     NONE_NON_TERMINAL = -1,
-
-//     PROGRAM,
-
-//     FUNCTIONS,
-//     FUNCTION,
-//     MAIN,
-
-//     FUNCTION_PARAMETERS,
-//     PARAMETERS,
-//     PARAMETER,
-
-//     COMPOUND_STATEMENTS,
-//     STATEMENT,
-
-//     BLOCK_STATEMENTS,
-//     BLOCK_STATEMENT,
-//     CONDITIONAL_STATEMENTS,
-//     LOOP_STATEMENTS,
-
-//     SINGLE_LINE_STATEMENT,
-//     BREAK_STATEMENTS,
-//     FUNCTION_CALL,
-//     INITIALIZATION_STATEMENTS,
-
-//     ARGUEMENTS,
-
-//     DECLARATION_STATEMENT,
-//     INITIALIZATION_STATEMENT,
-
-//     EXPRESSION,
-//     LOGICAL_EXPRESSION,
-//     DISJUNCTION_EXPRESSION,
-//     CONJUNCTION_EXPRESSION,
-//     NEGATION_EXPRESSION,
-//     LOGICAL_BRAKET_EXPRESSION,
-//     RELATIONAL_EXPRESSION,
-//     NUMERIC_EXPRESSION,
-//     SUBTRACTION_EXPRESSION,
-//     ADDITION_EXPRESSION,
-//     MULTIPLICATION_EXPRESSION,
-//     DIVISION_EXPRESSION,
-//     MODULAR_EXPRESSION,
-//     BITWISE_OR_EXPRESSION,
-//     BITWISE_AND_EXPRESSION,
-//     BITWISE_NEG_EXPRESSION,
-//     NUMERIC_BRAKET_EXPRESSION,
-
-//     TERMIMAL_EXPRESSIONS,
-//     TERMIMAL_EXPRESSION,
-
-//     ARRAY_IDENTIFIER,
-//     ARRAY_INITIAL_VALUE,
-//     INITIAL_VALUE,
-
-//     ARITH_STATEMENT,
-//     ARITH_U_OP,
-
-//     REL_OP,
-//     REL_EQ_OP,
-//     REL_INEQ_OP,
-
-//     RETURN_TYPE,
-//     DATA_TYPE,
-//     BOOLEAN,
-//     INTEGER,
-//     NEGATIVE_INTEGER,
-//     FLOAT,
-//     NEGATIVE_FLOAT,
-// };
-
 enum NON_TERMINALS {
     NONE_NON_TERMINAL = -1,
     PROGRAM,
@@ -289,24 +141,18 @@ enum NON_TERMINALS {
     ADDITIONAL_TERMINALS,
     EXPRESSION,
     LOGICAL_EXPRESSION,
-    LOGICAL_EXPR_EQUALITY_OPERATION,
-    LOGICAL_EXPR_RELATIONAL_OPERATION,
-    LOGICAL_AND_OR_OP,
-    LOGICAL_BRAKET_EXPRESSION,
     RELATIONAL_EXPRESSION,
-    RELATIONAL_OPERATION,
+    RELATION_OPERATION,
+    MORE_REL_OP,
     NUMERIC_EXPRESSION,
     NUMERIC_OPERATION,
     MULTIPLICATION_EXPRESSION,
-    MULT_DIV_MOD_OPERATIONS,
-    NUMERIC_BRAKET_EXPRESSION,
+    MULTIPLICATION_OPERATION,
     REL_OP,
     REL_EQ_OP,
     REL_INEQ_OP,
     TERMIMAL_EXPRESSION,
     TERMINAL_ID,
-    ARRAY_IDENTIFIER,
-    INSIDE_ARRAY,
     RETURN_TYPE,
     DATA_TYPE,
     BOOLEAN,
@@ -319,6 +165,7 @@ enum NON_TERMINALS {
  */
 const vector<string> non_terminal_names = {
     // "NONE_NON_TERMINAL",
+    "PROGRAM",
     "PROGRAM",
     "FUNCTIONS",
     "FUNCTION",
@@ -342,24 +189,18 @@ const vector<string> non_terminal_names = {
     "ADDITIONAL_TERMINALS",
     "EXPRESSION",
     "LOGICAL_EXPRESSION",
-    "LOGICAL_EXPR_EQUALITY_OPERATION",
-    "LOGICAL_EXPR_RELATIONAL_OPERATION",
-    "LOGICAL_AND_OR_OP",
-    "LOGICAL_BRAKET_EXPRESSION",
     "RELATIONAL_EXPRESSION",
-    "RELATIONAL_OPERATION",
+    "RELATION_OPERATION",
+    "MORE_REL_OP",
     "NUMERIC_EXPRESSION",
     "NUMERIC_OPERATION",
     "MULTIPLICATION_EXPRESSION",
-    "MULT_DIV_MOD_OPERATIONS",
-    "NUMERIC_BRAKET_EXPRESSION",
+    "MULTIPLICATION_OPERATION",
     "REL_OP",
     "REL_EQ_OP",
     "REL_INEQ_OP",
     "TERMIMAL_EXPRESSION",
     "TERMINAL_ID",
-    "ARRAY_IDENTIFIER",
-    "INSIDE_ARRAY",
     "RETURN_TYPE",
     "DATA_TYPE",
     "BOOLEAN",
@@ -417,6 +258,10 @@ typedef struct ProductionRule {
     //!
     vector<pair<ParserTokenType, ParserTypeValue>> rhs;
 
+    //!
+    bool synchProduction;
+    bool skipProduction;
+
     /**
 	 * @brief Construct a new Production Rule object
 	 * 
@@ -425,6 +270,18 @@ typedef struct ProductionRule {
     ProductionRule(ppp lhs) {
         this->lhs = lhs;
         this->rhs = vector<pair<ParserTokenType, ParserTypeValue>>();
+        this->synchProduction = false;
+    }
+
+    ProductionRule(bool synch) {
+        this->synchProduction = synch;
+        this->skipProduction = false;
+    }
+
+    ProductionRule() {
+        // create Skip Production
+        this->synchProduction = false;
+        this->skipProduction = true;
     }
 
     void print() {
@@ -442,7 +299,22 @@ typedef struct ProductionRule {
             cout << non_terminal_names[this->rhs[0].second.nonTerminal];
         }
     }
+
+    const bool operator==(const ProductionRule& other) const {
+        return tie(this->lhs, this->rhs, this->synchProduction) == tie(other.lhs, other.rhs, other.synchProduction);
+    }
+
+    const bool operator<(const ProductionRule& other) const {
+        return tie(this->lhs, this->rhs, this->synchProduction) < tie(other.lhs, other.rhs, other.synchProduction);
+    }
+
+    const bool operator>(const ProductionRule& other) const {
+        return tie(this->lhs, this->rhs, this->synchProduction) > tie(other.lhs, other.rhs, other.synchProduction);
+    }
 } ProductionRule;
+
+const ProductionRule SYNCH_PRODUCTION = ProductionRule(true);
+const ProductionRule SKIP_PRODUCTION = ProductionRule();
 
 /**
  * @brief 
@@ -459,6 +331,90 @@ typedef struct ParserNode {
     }
 } ParserNode;
 
+enum SyntaxErrorType {
+    SKIP,
+    SYNCH,
+};
+
+string terminalLookup(TERMINALS terminals);
+
+typedef struct SyntaxError {
+    SyntaxErrorType errorType;
+    ParserNode parserNode;
+    ppp expected;
+    ppp received;
+
+    SyntaxError(ParserNode parserNode, ppp expected, ppp received) : parserNode{parserNode} {
+        this->errorType = SKIP;
+        this->expected = expected;
+        this->received = received;
+    }
+
+    SyntaxError(ParserNode parserNode) : parserNode{parserNode} {
+        this->errorType = SYNCH;
+    }
+
+    void print() {
+        if (this->errorType == SyntaxErrorType::SKIP) {
+            cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number << ":" << parserNode.lexerToken->columnNumber << ": ";
+            cout << "\033[1;31mSyntax Error: \033[0m";
+            if (received.second.terminal == TERMINALS::FUNCTION_IDENTIFIER || received.second.terminal == TERMINALS::IDENTIFIER || received.second.terminal == TERMINALS::POSITIVE_INTEGER) {
+                cout << "Expected \'" << terminalLookup(expected.second.terminal) << "\' but received \'" << parserNode.lexerToken->lexeme << "\'" << endl;
+            } else {
+                cout << "Expected \'" << terminalLookup(expected.second.terminal) << "\' but received \'" << terminalLookup(received.second.terminal) << "\'" << endl;
+            }
+
+            cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << "\n";
+            // cout << "  " << parserNode.lexerToken->line_number << " | ";
+            // for (unsigned int i = 0; i < parserNode.lexerToken->columnNumber; ++i) {
+            //     cout << " ";
+            // }
+            // cout << "^";
+            // for (unsigned int i = 0; i < (parserNode.lexerToken->tokenLength - 1); ++i) {
+            //     cout << "~";
+            // }
+            cout << endl;
+        } else if (this->errorType == SyntaxErrorType::SYNCH) {
+            cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number << ": ";  //":" << parserNode.lexerToken->columnNumber << ": ";
+            cout << "\033[1;31mSyntax Error: \033[0m"
+                 << "\n";
+            // cout << "Expected " << terminal_names[expected.second.terminal] << ", but received " << terminal_names[received.second.terminal] << endl;
+            cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << "\n";
+            // cout << "  " << parserNode.lexerToken->line_number << " | ";
+            // for (unsigned int i = 0; i < parserNode.lexerToken->columnNumber; ++i) {
+            //     cout << " ";
+            // }
+            // cout << "^";
+            // for (unsigned int i = 0; i < (parserNode.lexerToken->tokenLength - 1); ++i) {
+            //     cout << "~";
+            // }
+            cout << endl;
+        }
+    }
+} SyntaxError;
+
+// typedef struct SyntaxError_Synch {
+//     ParserNode parserNode;
+
+//     SyntaxError_Synch(ParserNode parserNode) : parserNode{parserNode} {}
+
+//     void print() {
+//         cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number;  //":" << parserNode.lexerToken->columnNumber << ": ";
+//         cout << "\033[1;31mSyntax Error: \033[0m" << endl;
+//         // cout << "Expected " << terminal_names[expected.second.terminal] << ", but received " << terminal_names[received.second.terminal] << endl;
+//         cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << endl;
+//         // cout << "  " << parserNode.lexerToken->line_number << " | ";
+//         // for (unsigned int i = 0; i < parserNode.lexerToken->columnNumber; ++i) {
+//         //     cout << " ";
+//         // }
+//         // cout << "^";
+//         // for (unsigned int i = 0; i < (parserNode.lexerToken->tokenLength - 1); ++i) {
+//         //     cout << "~";
+//         // }
+//         cout << endl;
+//     }
+// } SyntaxError_Synch;
+
 /**
  * @brief 
  */
@@ -474,12 +430,31 @@ typedef struct Parser {
     // map<pair<ParserTokenType, ParserTypeValue>, vector<pair<ParserTokenType, ParserTypeValue>>> firstSet;
     map<ppp, vector<ppp>> firstSet;
     map<ppp, vector<ppp>> followSet;
-    map<ppp, map<ppp, vector<ProductionRule>>> parseTable;
+    map<ppp, map<ppp, ProductionRule>> parseTable;
+
+    /*
+	1) Print all the Grammar rule : i) X -> ABCDEFGHI
+	   +-------------------------------------------+
+	   | a  b    b   b b  b  b b                           |
+	A    X -> ABCDEFGHI	     2   
+	B
+	C
+	D
+	E
+	F
+	G
+	H
+	I
+	
+	*/
     // Follow Set
     // Parse Table
     vector<ppp> parseStack;
+    vector<SyntaxError> syntaxErrors;
+    vector<vector<ppp>> stackLMD;
 
     Parser(string filename) {
+        // initTerminalLookup();
         this->lexer = initLexer(filename);
         this->tokenList = vector<Token*>();
         this->parserTokenList = vector<ParserNode*>();
@@ -492,6 +467,8 @@ typedef struct Parser {
         // this->parseStack.push_back(make_pair(ParserTokenType::NON_TERMINAL, ParserTypeValue(TERMINALS::NONE_TERMINAL, NON_TERMINALS::PROGRAM)));
     }
 } Parser;
+
+void printStackProductions(vector<ppp>);
 
 void printTokenMessage(Token* token);
 
@@ -541,6 +518,8 @@ bool isElement(string, vector<string>);
  */
 bool isPPPElement(ppp, vector<ppp>&);
 
+bool isProductionRuleElement(ProductionRule, vector<ProductionRule>&);
+
 /**
  * @brief 
  * 
@@ -574,7 +553,10 @@ void generateFollowSets(Parser*);
 
 void generateParseTable(Parser*);
 
-#ifdef __cplusplus
-}
-#endif
+template <class T>
+bool isElement(T element, vector<T> arr);
+
+// #ifdef __cplusplus
+// }
+// #endif
 #endif

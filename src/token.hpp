@@ -141,11 +141,28 @@ typedef struct Token {
     string token_name;
     string lexeme;
 
+    unsigned int columnNumber;
+    string buffer;
+    unsigned int tokenLength;
+    string filename;
+
     Token(int lineNumber, TOKEN_TYPE token_type, string lexeme_string) {
-        line_number = lineNumber;
-        token = token_type;
-        token_name = token_names[token_type];
-        lexeme = string(lexeme_string);
+        this->line_number = lineNumber;
+        this->token = token_type;
+        this->token_name = token_names[token_type];
+        this->lexeme = string(lexeme_string);
+    }
+
+    Token(int lineNumber, TOKEN_TYPE token_type, string lexeme_string, unsigned int columnNumber, string buffer, unsigned int tokenLength, string filename) {
+        this->line_number = lineNumber;
+        this->token = token_type;
+        this->token_name = token_names[token_type];
+        this->lexeme = string(lexeme_string);
+
+        this->columnNumber = columnNumber;
+        this->buffer = buffer;
+        this->tokenLength = tokenLength;
+        this->filename = filename;
     }
 
     void print() {

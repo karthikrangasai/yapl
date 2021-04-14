@@ -88,5 +88,11 @@ Check `./tests/examples/` directory for the examples.
 
 - [x] Add Prod rule reader
 - [x] Add first set computing function
-- [ ] Add follow set computing function
-- [ ] Parse table generation
+- [x] Add follow set computing function
+- [x] Parse table generation
+- [x] Print Parse Table
+- [x] Parser
+- [x] Skip Errors
+- [x] SYNCH Errors
+
+- [ ] Test with multiple programs and create test suite

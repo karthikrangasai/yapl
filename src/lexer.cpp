@@ -283,7 +283,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == LEFT_SHIFT || new_token_type == LESS_OR_EQUAL) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -292,7 +292,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '<' only
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -305,7 +305,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == RIGHT_SHIFT || new_token_type == GREATER_OR_EQUAL) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -314,7 +314,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '>' only
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -327,7 +327,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == PRE_INCEREMENT) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -336,7 +336,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '+' only
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -349,7 +349,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == PRE_DECREMENT) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -358,7 +358,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '-' only
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -371,7 +371,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == LOGICAL_AND) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -380,7 +380,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '&' only
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -393,7 +393,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == LOGICAL_OR) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -402,7 +402,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '|' only
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -415,7 +415,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if (((lexer->lookAheadPtr + 1) < lexer->bufferLen && ((lexer->lookAheadPtr + 2) < lexer->bufferLen))) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingThreeChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1], buffer[lexer->lookAheadPtr + 2]);
                             if (new_token_type == NOTEQUAL) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 3));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 3), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 3).size(), lexer->fileName);
                                 lexer->updateCurrPtr(3);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -424,7 +424,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         }
 
                         // '=/=' didn't happen
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -443,7 +443,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                         if ((lexer->lookAheadPtr + 1) < lexer->bufferLen) {
                             TOKEN_TYPE new_token_type = getTokenTypeUsingTwoChar(buffer[lexer->lookAheadPtr], buffer[lexer->lookAheadPtr + 1]);
                             if (new_token_type == ASSIGNMENT || new_token_type == BINDING) {
-                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2));
+                                lexer->currentToken = new Token(lexer->lineNumber, new_token_type, buffer.substr(lexer->lookAheadPtr, 2), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 2).size(), lexer->fileName);
                                 lexer->updateCurrPtr(2);
                                 lexer->updateLookAheadPtr();
                                 lexer->foundToken();
@@ -468,7 +468,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                     }
 
                     default: {  // {, }, (, ), [, ], ;, \n
-                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1));
+                        lexer->currentToken = new Token(lexer->lineNumber, token_type, buffer.substr(lexer->lookAheadPtr, 1), lexer->currPtr, lexer->buffer, buffer.substr(lexer->lookAheadPtr, 1).size(), lexer->fileName);
                         lexer->updateCurrPtr(1);
                         lexer->updateLookAheadPtr();
                         lexer->foundToken();
@@ -522,7 +522,7 @@ void _getNextTokenHelper(Lexer* lexer) {
                     lexer->currentLiteralState = NO_LITERAL;
                     lexer->stringState = STRING_STATE_START;
                 } else if (lexer->lookAheadPtr - lexer->currPtr > 0) {
-                    lexer->currentToken = new Token(lexer->lineNumber, STRING_TOKEN, string(lexer->identifierTokenBuffer));
+                    lexer->currentToken = new Token(lexer->lineNumber, STRING_TOKEN, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                     lexer->updateCurrPtr(0);
                     lexer->updateLookAheadPtr();
                     lexer->foundToken();
@@ -534,9 +534,9 @@ void _getNextTokenHelper(Lexer* lexer) {
             bool isValid = isVariableLiteral(lexer->identifierTokenBuffer);
             if (isValid) {
                 if (isKeyword(lexer->identifierTokenBuffer)) {
-                    lexer->currentToken = new Token(lexer->lineNumber, KEYWORD, string(lexer->identifierTokenBuffer));
+                    lexer->currentToken = new Token(lexer->lineNumber, KEYWORD, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                 } else {
-                    lexer->currentToken = new Token(lexer->lineNumber, VAR_IDENTIFIER, string(lexer->identifierTokenBuffer));
+                    lexer->currentToken = new Token(lexer->lineNumber, VAR_IDENTIFIER, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                 }
                 lexer->foundToken();
             } else {
@@ -550,9 +550,9 @@ void _getNextTokenHelper(Lexer* lexer) {
             bool isValid = isFunctionLiteral(lexer->identifierTokenBuffer);
             if (isValid) {
                 if (isKeyword(lexer->identifierTokenBuffer)) {
-                    lexer->currentToken = new Token(lexer->lineNumber, KEYWORD, string(lexer->identifierTokenBuffer));
+                    lexer->currentToken = new Token(lexer->lineNumber, KEYWORD, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                 } else {
-                    lexer->currentToken = new Token(lexer->lineNumber, FUNC_IDENTIFIER, string(lexer->identifierTokenBuffer));
+                    lexer->currentToken = new Token(lexer->lineNumber, FUNC_IDENTIFIER, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                 }
                 lexer->foundToken();
             } else {
@@ -565,7 +565,7 @@ void _getNextTokenHelper(Lexer* lexer) {
         } else if (lexer->currentLiteralState == INTEGER_LITERAL) {
             bool isValid = isIntegerLiteral(lexer, lexer->identifierTokenBuffer);
             if (isValid) {
-                lexer->currentToken = new Token(lexer->lineNumber, INTEGER_TOKEN, string(lexer->identifierTokenBuffer));
+                lexer->currentToken = new Token(lexer->lineNumber, INTEGER_TOKEN, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                 lexer->foundToken();
             } else {
                 lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_INTEGER, lexer->buffer, lexer->identifierTokenBuffer.size());
@@ -577,7 +577,7 @@ void _getNextTokenHelper(Lexer* lexer) {
         } else if (lexer->currentLiteralState == FLOAT_LITERAL) {
             bool isValid = isFloatLiteral(lexer, lexer->identifierTokenBuffer);
             if (isValid) {
-                lexer->currentToken = new Token(lexer->lineNumber, FLOAT_TOKEN, string(lexer->identifierTokenBuffer));
+                lexer->currentToken = new Token(lexer->lineNumber, FLOAT_TOKEN, string(lexer->identifierTokenBuffer), lexer->currPtr, lexer->buffer, lexer->identifierTokenBuffer.size(), lexer->fileName);
                 lexer->foundToken();
             } else {
                 lexer->currentLexerError = new LexerError(lexer->lineNumber, lexer->currPtr, INVALID_FLOAT, lexer->buffer, lexer->identifierTokenBuffer.size());

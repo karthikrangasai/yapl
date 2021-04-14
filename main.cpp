@@ -19,6 +19,38 @@ int main(int argc, char const* argv[]) {
     // generateParseTable(parser);
 
     runParser(parser);
+
+    if (parser->syntaxErrors.empty()) {
+        // print LMD
+        fstream f("output.txt", fstream::out);
+        for (vector<ppp> stackInput : parser->stackLMD) {
+            for (auto it : stackInput) {
+                if (it.first == ParserTokenType::TERMINAL)
+                    f << terminal_names[it.second.terminal] << " ";
+                else
+                    f << non_terminal_names[it.second.nonTerminal] << " ";
+            }
+            f << endl
+              << endl;
+        }
+        f.close();
+    } else {
+        for (SyntaxError e : parser->syntaxErrors) {
+            e.print();
+        }
+    }
+
+    // cout << "Syntax Errors:" << endl;
+    // for (SyntaxError e : parser->syntaxErrors) {
+    //     e.print();
+    // }
+
+    // cout << "--------------------------------------------------------------" << endl;
+    // cout << "LMD:" << endl;
+    // for (vector<ppp> stackInput : parser->stackLMD) {
+    //     printStackProductions(stackInput);
+    // }
+
     // if (parser->lexerErrors.empty()) {
     //     unsigned int numTokens = parser->tokenList.size();
     //     for (unsigned int i = 0; i < numTokens; ++i) {

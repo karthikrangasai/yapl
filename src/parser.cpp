@@ -5,88 +5,137 @@
  */
 #include <algorithm>
 #include <cassert>
+#include <sys/stat.h>
 #include "parser.hpp"
 
-void printFirstTable(Parser* parser, string filename, int flag) {
-    freopen(filename.c_str(), "w", stdout);
+void printTables(Parser* parser, string filename, int flag) {
+    fstream f(filename, fstream::out);
 
     if (flag == 0) {
+        unsigned int columnWidth = 30;
+        string temp;
+        string spaces(columnWidth - temp.length(), ' ');
         for (auto const& it : parser->firstSet) {
             ppp key = it.first;
             if (key.first == ParserTokenType::TERMINAL) {
-                cout << terminal_names[key.second.terminal];
+                temp = terminal_names[key.second.terminal];
+                spaces = string(columnWidth - temp.length(), ' ');
+                f << temp << spaces;
             } else {
-                cout << non_terminal_names[key.second.nonTerminal];
+                temp = non_terminal_names[key.second.nonTerminal];
+                spaces = string(columnWidth - temp.length(), ' ');
+                f << temp << spaces;
             }
 
-            cout << "  -->  ";
+            f << "  -->  ";
 
             vector<ppp> s = it.second;
-            cout << s.size() << "  {";
+            f << "[" << s.size() << "]"
+              << "  {";
             for (auto const& iit : s) {
                 if (iit.first == ParserTokenType::TERMINAL) {
-                    cout << terminal_names[iit.second.terminal];
+                    f << terminal_names[iit.second.terminal];
                 } else {
-                    cout << non_terminal_names[iit.second.nonTerminal];
+                    f << non_terminal_names[iit.second.nonTerminal];
                 }
-                cout << ", ";
+                f << ", ";
             }
 
-            cout << "}" << endl
-                 << endl;
+            f << "}" << endl
+              << endl;
         }
     } else if (flag == 1) {
+        unsigned int columnWidth = 30;
+        string temp;
+        string spaces(columnWidth - temp.length(), ' ');
         for (auto const& it : parser->followSet) {
             ppp key = it.first;
             if (key.first == ParserTokenType::TERMINAL) {
-                cout << terminal_names[key.second.terminal];
+                temp = terminal_names[key.second.terminal];
+                spaces = string(columnWidth - temp.length(), ' ');
+                f << temp << spaces;
             } else {
-                cout << non_terminal_names[key.second.nonTerminal];
+                temp = non_terminal_names[key.second.nonTerminal];
+                spaces = string(columnWidth - temp.length(), ' ');
+                f << temp << spaces;
             }
 
-            cout << "  -->  ";
+            f << "  -->  ";
 
             vector<ppp> s = it.second;
-            cout << s.size() << "  {";
+            f << "[" << s.size() << "]"
+              << "  {";
             for (auto const& iit : s) {
                 if (iit.first == ParserTokenType::TERMINAL) {
-                    cout << terminal_names[iit.second.terminal];
+                    f << terminal_names[iit.second.terminal];
                 } else {
-                    cout << non_terminal_names[iit.second.nonTerminal];
+                    f << non_terminal_names[iit.second.nonTerminal];
                 }
-                cout << ", ";
+                f << ", ";
             }
 
-            cout << "}" << endl
-                 << endl;
+            f << "}" << endl
+              << endl;
         }
     } else if (flag == 2) {
-        // Print parse table
-        // NT
-        // 		T : PR+
+        unsigned int columnWidth = 30;
+        string rowSeparator(terminal_names.size() * (columnWidth + 1) + 1, '-');
+        char separator = '|';
+        string temp;
+        string spaces(columnWidth - temp.length(), ' ');
 
-        // for (auto const& it : parser->firstSet) {
-        // }
+        // Print Column Headers
+        f << temp << separator << spaces;
+        for (unsigned int i = 1; i < terminal_names.size(); ++i) {
+            temp = terminal_names[i];
+            string left_spaces = string((columnWidth - temp.length()) / 2, ' ');
+            string right_spaces = string((columnWidth - temp.length() + 1) / 2, ' ');
+            f << separator << left_spaces << temp << right_spaces;
+        }
+        f << separator << endl
+          << rowSeparator << endl;
+
+        // Printing rows
+        for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
+            ppp nonterminal = parser->grammarRules[i].lhs;
+            temp = non_terminal_names[nonterminal.second.nonTerminal];
+            string left_spaces = string((columnWidth - temp.length()) / 2, ' ');
+            string right_spaces = string((columnWidth - temp.length() + 1) / 2, ' ');
+            f << separator << left_spaces << temp << right_spaces;
+
+            for (unsigned int j = 1; j < terminal_names.size(); ++j) {
+                TERMINALS t = convertStringToT(terminal_names[j]);
+                ppp terminal = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(t, NON_TERMINALS::NONE_NON_TERMINAL));
+
+                if (parser->parseTable[nonterminal][terminal] == SKIP_PRODUCTION) {
+                    temp = "SKIP";
+                } else if (parser->parseTable[nonterminal][terminal] == SYNCH_PRODUCTION) {
+                    temp = "SYNCH";
+                } else {
+                    unsigned int index = distance(parser->grammarRules.begin(), find(parser->grammarRules.begin(), parser->grammarRules.end(), parser->parseTable[nonterminal][terminal]));
+                    temp = to_string(index);
+                }
+                string left_spaces = string((columnWidth - temp.length()) / 2, ' ');
+                string right_spaces = string((columnWidth - temp.length() + 1) / 2, ' ');
+                f << separator << left_spaces << temp << right_spaces;
+            }
+            f << separator << endl
+              << rowSeparator << endl;
+        }
     }
-
-    fclose(stdout);
+    f.close();
+    chmod(filename.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
 }
 
-/**
- * @brief 
- * 
- * @param filename 
- * @return Parser* 
- */
 Parser* initializeParser(string filename) {
     Parser* parser = new Parser(filename);
     productionsRulesInit(parser);
     generateFirstSets(parser);
-    // printFirstTable(parser, "firstSet2.txt", 0);
+    printTables(parser, "./src/parse_table/firstSet.txt", 0);
     generateFollowSets(parser);
-    // printFirstTable(parser, "followSet2.txt", 1);
+    printTables(parser, "./src/parse_table/followSet.txt", 1);
     generateParseTable(parser);
-    // printFirstTable(parser, "parserTable2.txt", 2);
+    printTables(parser, "./src/parse_table/parserTable.txt", 2);
     return parser;
 }
 
@@ -97,7 +146,12 @@ void printStackProductions(vector<ppp> stackInputs) {
         else
             cout << non_terminal_names[it.second.nonTerminal] << " ";
     }
-    cout << endl;
+    cout << endl
+         << endl;
+}
+
+void storeStackProductions(Parser* parser, vector<ppp> stackInputs) {
+    parser->stackLMD.push_back(stackInputs);
 }
 
 void runParser(Parser* parser) {
@@ -105,26 +159,21 @@ void runParser(Parser* parser) {
     do {
         getNextToken(parser->lexer);
         if (parser->lexer->lexerState == FOUND_TOKEN) {
-            // Token* token = new Token(*(parser->lexer->currentToken));
-            // parser->tokenList.push_back(token);
             parser->tokenList.push_back(parser->lexer->currentToken);
             parser->parserTokenList.push_back(determineParserNode(parser->lexer->currentToken));
             parser->lexer->resetGotToken();
         } else if (parser->lexer->lexerState == ERROR_OCCURED) {
-            // LexerError* lexerError = new LexerError(*(parser->lexer->currentLexerError));
-            // parser->lexerErrors.push_back(lexerError);
             parser->lexerErrors.push_back(parser->lexer->currentLexerError);
             parser->lexer->reseterrorOccured();
         }
     } while (!(parser->lexer->reachedEOF && ((parser->lexer->currPtr >= parser->lexer->bufferLen))));
 
     // You have all the details to run LL(1) Parser
-
     unsigned int tokenIndex = 0;
     parser->parseStack.push_back(parser->grammarRules[0].lhs);
     ppp X = parser->parseStack.back();
     ppp a = parser->parserTokenList[tokenIndex]->lexerValueTokenTypeIdentifier;
-    printStackProductions(parser->parseStack);
+    storeStackProductions(parser, parser->parseStack);
     while (!(X == _END_MARKER)) {
         if (X == a) {
             // pop the stack and let a be the next symbol of w ;
@@ -135,45 +184,50 @@ void runParser(Parser* parser) {
             } else {
                 a = _END_MARKER;
             }
-
         } else if (X.first == ParserTokenType::TERMINAL) {
             if (X.second.terminal == TERMINALS::EMPTY) {
                 parser->parseStack.pop_back();
             } else {
-                // error()
-                // ok case
-                cout << "Some GAY Terminal Error" << endl;
+                // Expected X, Got a.
+                if (tokenIndex < parser->parserTokenList.size()) {
+                    parser->syntaxErrors.push_back(SyntaxError(*(parser->parserTokenList[tokenIndex]), X, a));
+                } else {
+                    parser->syntaxErrors.push_back(SyntaxError(*(parser->parserTokenList.back()), X, a));
+                }
+                parser->parseStack.pop_back();
             }
-        } else if (parser->parseTable[X][a].empty()) {
-            // error()
-            cout << endl
-                 << "-------------------TESTING-------------------" << endl;
-            for (auto it : parser->parseTable[X]) {
-                ppp f = it.first;
-                if (f.first == ParserTokenType::TERMINAL)
-                    cout << terminal_names[f.second.terminal] << " ";
-                else
-                    cout << non_terminal_names[f.second.nonTerminal] << " ";
+        } else if (parser->parseTable[X][a] == SKIP_PRODUCTION) {
+            // skip a
+            if (a == _END_MARKER) {
+                parser->parseStack.pop_back();
+            } else {
+                ++tokenIndex;
+                if (tokenIndex < parser->parserTokenList.size()) {
+                    a = parser->parserTokenList[tokenIndex]->lexerValueTokenTypeIdentifier;
+                } else {
+                    parser->parseStack.pop_back();
+                }
             }
-            cout << "Table Input is Empty" << endl;
-        } else if (!parser->parseTable[X][a].empty()) {
+        } else if (!(parser->parseTable[X][a] == SKIP_PRODUCTION)) {
             // output the production
-            parser->parseStack.pop_back();
-            vector<ppp> productions = parser->parseTable[X][a][0].rhs;
-            reverse(productions.begin(), productions.end());
-            parser->parseStack.insert(parser->parseStack.end(), productions.begin(), productions.end());
+            if (SYNCH_PRODUCTION == parser->parseTable[X][a]) {
+                // SYNCH Error = pop() : skip the production
+                parser->parseStack.pop_back();
+                parser->syntaxErrors.push_back(SyntaxError(*(parser->parserTokenList[tokenIndex - 1])));
+            } else {
+                parser->parseStack.pop_back();
+                vector<ppp> productions = parser->parseTable[X][a].rhs;
+                reverse(productions.begin(), productions.end());
+                parser->parseStack.insert(parser->parseStack.end(), productions.begin(), productions.end());
+            }
         }
         X = parser->parseStack.back();
-        printStackProductions(parser->parseStack);
+        storeStackProductions(parser, parser->parseStack);
     }
-    //while (!(X == _END_MARKER));
 }
 
-// pair<string, string> _splitRule(string s) {
-// }
-
 void productionsRulesInit(Parser* parser) {
-    // Assuming filename is always `rules.bnf`
+    // Assuming filename is always `final_rules.bnf`
     try {
         parser->rules_file.open("./src/parse_table/final_rules.bnf", fstream::in);
     } catch (const std::exception& e) {
@@ -183,24 +237,15 @@ void productionsRulesInit(Parser* parser) {
     string ruleBuffer;
     getline(parser->rules_file, ruleBuffer);
     while (!(parser->rules_file.eof())) {
-        // cout << ruleBuffer << endl;
         if (ruleBuffer != "") {
             size_t pos = ruleBuffer.find(" -> ");
             if (pos != string::npos) {
                 string lhs = ruleBuffer.substr(0, pos);
                 string rhs = ruleBuffer.substr(pos + 4);
 
-                // Debug print line
-                // cout << lhs << " -> " << rhs << endl;
                 ParserTypeValue lhsValue(TERMINALS::NONE_TERMINAL, convertStringToNT(lhs));
-                // lhsValue.terminal = NONE_TERMINAL;
-                // lhsValue.nonTerminal = convertStringToNT(lhs);
                 ProductionRule pRule = ProductionRule(make_pair(ParserTokenType::NON_TERMINAL, lhsValue));
                 if (rhs == "\'\'") {
-                    // EMPTY NT
-                    // ParserTypeValue value;
-                    // value.terminal = TERMINALS::EMPTY;
-                    // value.nonTerminal = NONE_NON_TERMINAL;
                     pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::EMPTY, NON_TERMINALS::NONE_NON_TERMINAL)));
                 } else {
                     vector<string> vs = split(rhs, " ");
@@ -209,22 +254,14 @@ void productionsRulesInit(Parser* parser) {
                     for (string& s : vs) {
                         ParserTypeValue value;
                         if (isElement(s, terminal_names)) {
-                            // value.terminal = ;
-                            // value.nonTerminal = NONE_NON_TERMINAL;
                             pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, ParserTypeValue(convertStringToT(s), NON_TERMINALS::NONE_NON_TERMINAL)));
                         } else if (isElement(s, non_terminal_names)) {
-                            // value.terminal = NONE_TERMINAL;
-                            // value.nonTerminal = convertStringToNT(s);
                             pRule.rhs.push_back(make_pair(ParserTokenType::NON_TERMINAL, ParserTypeValue(TERMINALS::NONE_TERMINAL, convertStringToNT(s))));
                         }
                     }
                 }
-
                 // Store the current rule with all rules.
                 parser->grammarRules.push_back(pRule);
-
-                // Space separate the rhs words.
-                // check each workd (string comparision) and push_back into `rhs` member variable of production rule.
             } else {
                 // Error case: Invalid Grammar
                 cout << "[ERROR]: Invalid Grammar" << endl;
@@ -232,14 +269,11 @@ void productionsRulesInit(Parser* parser) {
         }
         getline(parser->rules_file, ruleBuffer);
     }
-
-    // Read from file and store it.
 }
 
 ParserNode* determineParserNode(Token* lexerToken) {
     ParserTokenType nodeType = ParserTokenType::TERMINAL;
     ParserTypeValue terminalType(TERMINALS::NONE_TERMINAL, NON_TERMINALS::NONE_NON_TERMINAL);
-    // terminalType.nonTerminal = NONE_NON_TERMINAL;
     switch (lexerToken->token) {
         // case TOKEN_TYPE::BITWISE_NOT: {
         //     terminalType.terminal = TERMINALS::BITWISE_NOT_OPERATOR;
@@ -297,18 +331,18 @@ ParserNode* determineParserNode(Token* lexerToken) {
             terminalType.terminal = TERMINALS::INEQUALITY_OPERATOR;
             break;
         }
-        case TOKEN_TYPE::LOGICAL_NOT: {
-            terminalType.terminal = TERMINALS::NOT_OPERATOR;
-            break;
-        }
-        case TOKEN_TYPE::LOGICAL_AND: {
-            terminalType.terminal = TERMINALS::AND_OPERATOR;
-            break;
-        }
-        case TOKEN_TYPE::LOGICAL_OR: {
-            terminalType.terminal = TERMINALS::OR_OPERATOR;
-            break;
-        }
+        // case TOKEN_TYPE::LOGICAL_NOT: {
+        //     terminalType.terminal = TERMINALS::NOT_OPERATOR;
+        //     break;
+        // }
+        // case TOKEN_TYPE::LOGICAL_AND: {
+        //     terminalType.terminal = TERMINALS::AND_OPERATOR;
+        //     break;
+        // }
+        // case TOKEN_TYPE::LOGICAL_OR: {
+        //     terminalType.terminal = TERMINALS::OR_OPERATOR;
+        //     break;
+        // }
         case TOKEN_TYPE::BINDING: {
             terminalType.terminal = TERMINALS::BINDING_OPERATOR;
             break;
@@ -325,14 +359,14 @@ ParserNode* determineParserNode(Token* lexerToken) {
             terminalType.terminal = TERMINALS::RIGHT_PARENTHESES;
             break;
         }
-        case TOKEN_TYPE::LEFT_SQUARE_BR: {
-            terminalType.terminal = TERMINALS::LEFT_SQUARE_BRACKET;
-            break;
-        }
-        case TOKEN_TYPE::RIGHT_SQUARE_BR: {
-            terminalType.terminal = TERMINALS::RIGHT_SQUARE_BRACKET;
-            break;
-        }
+        // case TOKEN_TYPE::LEFT_SQUARE_BR: {
+        //     terminalType.terminal = TERMINALS::LEFT_SQUARE_BRACKET;
+        //     break;
+        // }
+        // case TOKEN_TYPE::RIGHT_SQUARE_BR: {
+        //     terminalType.terminal = TERMINALS::RIGHT_SQUARE_BRACKET;
+        //     break;
+        // }
         case TOKEN_TYPE::LEFT_FLOWER_BR: {
             terminalType.terminal = TERMINALS::LEFT_FLOWER_BRACKET;
             break;
@@ -392,13 +426,7 @@ ParserNode* determineParserNode(Token* lexerToken) {
                 terminalType.terminal = TERMINALS::END_KEYWORD;
             } else if (lexerToken->lexeme == "false") {
                 terminalType.terminal = TERMINALS::FALSE_KEYWORD;
-            }
-            //  else if (lexerToken->lexeme == "float") {
-            //     terminalType.terminal = TERMINALS::FLOAT_KEYWORD;
-            // } else if (lexerToken->lexeme == "for") {
-            //     terminalType.terminal = TERMINALS::FOR_KEYWORD;
-            // }
-            else if (lexerToken->lexeme == "function") {
+            } else if (lexerToken->lexeme == "function") {
                 terminalType.terminal = TERMINALS::FUNTION_KEYWORD;
             } else if (lexerToken->lexeme == "if") {
                 terminalType.terminal = TERMINALS::IF_KEYWORD;
@@ -413,6 +441,11 @@ ParserNode* determineParserNode(Token* lexerToken) {
             } else if (lexerToken->lexeme == "while") {
                 terminalType.terminal = TERMINALS::WHILE_KEYWORD;
             }
+            //  else if (lexerToken->lexeme == "float") {
+            //     terminalType.terminal = TERMINALS::FLOAT_KEYWORD;
+            // } else if (lexerToken->lexeme == "for") {
+            //     terminalType.terminal = TERMINALS::FOR_KEYWORD;
+            // }
             break;
         }
         default: {
@@ -423,12 +456,111 @@ ParserNode* determineParserNode(Token* lexerToken) {
     return new ParserNode(make_pair(nodeType, terminalType), lexerToken);
 }
 
+string terminalLookup(TERMINALS terminals) {
+    if (terminals == TERMINALS::IDENTIFIER) {
+        return "ID";
+    } else if (terminals == TERMINALS::FUNCTION_IDENTIFIER) {
+        return "function_ID";
+    } else if (terminals == TERMINALS::FUNTION_KEYWORD) {
+        return "function";
+    } else if (terminals == TERMINALS::MODULO_OPERATOR) {
+        return "%";
+    } else if (terminals == TERMINALS::DIVISION_OPERATOR) {
+        return "/";
+    } else if (terminals == TERMINALS::MULTIPLICATION_OPERATOR) {
+        return "*";
+    } else if (terminals == TERMINALS::ADDITION_OPERATOR) {
+        return "+";
+    } else if (terminals == TERMINALS::SUBTRACTION_OPERATOR) {
+        return "-";
+    } else if (terminals == TERMINALS::LEFT_PARENTHESES) {
+        return "(";
+    } else if (terminals == TERMINALS::RIGHT_PARENTHESES) {
+        return ")";
+    }
+    //  else if (terminals == TERMINALS::LEFT_SQUARE_BRACKET) {
+    //     return "[";
+    // } else if (terminals == TERMINALS::RIGHT_SQUARE_BRACKET) {
+    //     return "]";
+    // }
+    else if (terminals == TERMINALS::LEFT_FLOWER_BRACKET) {
+        return "{";
+    } else if (terminals == TERMINALS::RIGHT_FLOWER_BRACKET) {
+        return "}";
+    } else if (terminals == TERMINALS::COMMA_SEPARATOR) {
+        return ",";
+    } else if (terminals == TERMINALS::SEMI_COLON_SEPARATOR) {
+        return ";";
+    } else if (terminals == TERMINALS::BINDING_OPERATOR) {
+        return "::";
+    } else if (terminals == TERMINALS::END_DEFINITION_KEYWORD) {
+        return "end_definition";
+    } else if (terminals == TERMINALS::POSITIVE_INTEGER) {
+        return "integer";
+    } else if (terminals == TERMINALS::TRUE_KEYWORD) {
+        return "true";
+    } else if (terminals == TERMINALS::FALSE_KEYWORD) {
+        return "false";
+    } else if (terminals == TERMINALS::BOOLEAN_KEYWORD) {
+        return "boolean";
+    } else if (terminals == TERMINALS::INTEGER_KEYWORD) {
+        return "integer";
+    } else if (terminals == TERMINALS::VOID_KEYWORD) {
+        return "void";
+    } else if (terminals == TERMINALS::LESS_THAN_EQUAL_OPERATOR) {
+        return "<=";
+    } else if (terminals == TERMINALS::GREATER_THAN_EQUAL_OPERATOR) {
+        return ">=";
+    } else if (terminals == TERMINALS::LESS_THAN_OPERATOR) {
+        return "<";
+    } else if (terminals == TERMINALS::GREATER_THAN_OPERATOR) {
+        return ">";
+    } else if (terminals == TERMINALS::EQAULITY_OPERATOR) {
+        return "=";
+    } else if (terminals == TERMINALS::INEQUALITY_OPERATOR) {
+        return "=/=";
+    }
+    // else if (terminals == TERMINALS::NOT_OPERATOR) {
+    //     return "!";
+    // } else if (terminals == TERMINALS::OR_OPERATOR) {
+    //     return "||";
+    // }
+    //  else if (terminals == TERMINALS::AND_OPERATOR) {
+    //     return "&&";
+    // }
+    else if (terminals == TERMINALS::ASSIGNMENT_OPERATOR) {
+        return ":=";
+    } else if (terminals == TERMINALS::BREAK_KEYWORD) {
+        return "break";
+    } else if (terminals == TERMINALS::CONTINUE_KEYWORD) {
+        return "continue";
+    } else if (terminals == TERMINALS::RETURN_KEYWORD) {
+        return "return";
+    } else if (terminals == TERMINALS::WHILE_KEYWORD) {
+        return "while";
+    } else if (terminals == TERMINALS::END_KEYWORD) {
+        return "end";
+    } else if (terminals == TERMINALS::IF_KEYWORD) {
+        return "if";
+    } else if (terminals == TERMINALS::ELSE_KEYWORD) {
+        return "else";
+    } else if (terminals == TERMINALS::END_MARKER) {
+        return "unexpected EOF";
+    }
+
+    return "";
+}
+
+template <class T>
+bool isElement(T element, vector<T> arr) {
+    return find(arr.begin(), arr.end(), element) != arr.end();
+}
+
 bool isElement(string element, vector<string> arr) {
     return find(arr.begin(), arr.end(), element) != arr.end();
 }
 
 TERMINALS convertStringToT(string s) {
-    // find(terminal_names.begin(), terminal_names.end(), s); -> Not working: Complain to Bjarne Mama
     for (unsigned int i = 0; i < terminal_names.size(); ++i) {
         if (terminal_names[i] == s) {
             return TERMINALS(i);
@@ -459,69 +591,25 @@ vector<string> split(const string& line, const string& delim) {
 }
 
 void generateFirstSets(Parser* parser) {
-    // map<pair<ParserTokenType, ParserTypeValue>, vector<pair<ParserTokenType, ParserTypeValue>>>
     bool notDone;
     unsigned int count = 0;
-
     for (unsigned int i = 0; i < terminal_names.size(); ++i) {
-        // cout << terminal_names[i] << endl;
-        // ParserTypeValue keyValue;
-        // keyValue.terminal = convertStringToT(terminal_names[i]);
-        // keyValue.nonTerminal = NONE_NON_TERMINAL;
-
         ppp p = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(convertStringToT(terminal_names[i]), NON_TERMINALS::NONE_NON_TERMINAL));
         parser->firstSet[p] = {p};
     }
-
     do {
         notDone = false;
-
         for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
-            // vs rule = split(rules[i], "->");
-            // if (rule.size() < 2) {
-            //     cout << "KOTHI error";
-            //     continue;
-            // }
-            // string nonterminal = rule[0];
-            // vs development = split(rule[1], " ");
-            // Already created grammarRules //
-
-            // vs nonterminalFirsts = firsts[nonterminal];
-
-            // parser->firstSet[parser->grammarRules[i].lhs] = vector<ppp>();
             vector<ppp> nonterminalFirsts = parser->firstSet[parser->grammarRules[i].lhs];
-
             vector<ppp> development = parser->grammarRules[i].rhs;
-
-            // ParserTypeValue emptyValue;
-            // emptyValue.terminal = TERMINALS::EMPTY;
-            // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-            // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
-
-            // if (development.size() == 1 && development[0] == EPSILON) {
             if (development.size() == 1 && development[0] == EPSILON) {
                 notDone |= addUnique(EPSILON, nonterminalFirsts);
             } else {
                 notDone |= collectFirsts4(parser->firstSet, development, nonterminalFirsts);
             }
-
             parser->firstSet[parser->grammarRules[i].lhs] = nonterminalFirsts;
-
-            // for (auto it : parser->firstSet) {
-            //     ppp key = it.first;
-            //     if (key.first == ParserTokenType::TERMINAL) {
-            //         cout << terminal_names[key.second.terminal ] << endl;
-            //     } else {
-            //         cout << non_terminal_names[key.second.nonTerminal ] << endl;
-            //     }
-            // }
-            // cout << endl;
         }
-        // printFirstTable(parser);
-        // cout << endl
-        //      << endl;
         ++count;
-        // cout << "Done with all production rules: " << count << " times." << endl;
     } while (notDone);
 }
 
@@ -529,8 +617,12 @@ bool isPPPElement(ppp element, vector<ppp>& rhs) {
     return (find(rhs.begin(), rhs.end(), element) != rhs.end());
 }
 
+bool isProductionRuleElement(ProductionRule element, vector<ProductionRule>& rhs) {
+    return (find(rhs.begin(), rhs.end(), element) != rhs.end());
+}
+
 bool addUnique(ppp element, vector<ppp>& arr) {
-    if (!isPPPElement(element, arr)) {
+    if (!isElement(element, arr)) {
         arr.push_back(element);
         return true;
     }
@@ -538,103 +630,55 @@ bool addUnique(ppp element, vector<ppp>& arr) {
 }
 
 bool collectFirsts4(map<ppp, vector<ppp>>& firsts, vector<ppp>& development, vector<ppp>& nonterminalFirsts) {
-    // ParserTypeValue emptyValue;
-    // emptyValue.terminal = TERMINALS::EMPTY;
-    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
-
     bool result = false;
     bool epsilonInSymbolFirsts = true;
 
     for (auto const& j : development) {
         ppp symbol = j;
         epsilonInSymbolFirsts = false;
-
-        // Test with raw terminals //
-        // if (isElement(symbol, terminals)) {
-        //     result |= addUnique(symbol, nonterminalFirsts);
-        //     break;
-        // }
         if (symbol.first == ParserTokenType::TERMINAL) {
-            // string terminal = terminal_names[symbol.second.terminal ];
             result |= addUnique(symbol, nonterminalFirsts);
             break;
         }
-
         for (auto const& k : firsts[symbol]) {
             ppp first = k;
-
             epsilonInSymbolFirsts |= (first == EPSILON);
-
             result |= addUnique(first, nonterminalFirsts);
         }
-
         if (!epsilonInSymbolFirsts) {
             break;
         }
     }
-
     if (epsilonInSymbolFirsts) {
         result |= addUnique(EPSILON, nonterminalFirsts);
     }
-
     return result;
 }
 
-// // Choose auto x when you want to work with copies.
-// #define foritc(i, v) for (auto i = v)
-// // Choose auto &x when you want to work with original items and may modify them.
-// #define foritm(i, v) for (auto& i = v)
-// // Choose auto const &x when you want to work with original items and will not modify them.
-// #define forit(i, v) for (auto const& i = v)
-// 31657
-
 void generateFollowSets(Parser* parser) {
-    // ParserTypeValue emptyValue;
-    // emptyValue.terminal = TERMINALS::EMPTY;
-    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
-
-    // ParserTypeValue endMarkerValue;
-    // endMarkerValue.terminal = TERMINALS::NONE_TERMINAL;
-    // endMarkerValue.nonTerminal = NON_TERMINALS::END_MARKER;
-    // ppp _END_MARKER = make_pair(ParserTokenType::NON_TERMINAL, endMarkerValue);
-
     bool notDone;
-
     do {
         notDone = false;
-
-        // for(auto const& rule : parser->grammarRules){
         for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
             ppp nonterminal = parser->grammarRules[i].lhs;
             vector<ppp> development = parser->grammarRules[i].rhs;
 
             if (i == 0) {
                 vector<ppp> nonterminalFollows = parser->followSet[nonterminal];
-
                 notDone |= addUnique(_END_MARKER, nonterminalFollows);
-
                 parser->followSet[nonterminal] = nonterminalFollows;
             }
 
             for (unsigned int j = 0; j < development.size(); ++j) {
                 ppp symbol = development[j];
-
-                // if (isElement(symbol, nonterminals)) {
                 if (symbol.first == ParserTokenType::NON_TERMINAL) {
                     vector<ppp> symbolFollows = parser->followSet[symbol];
-
-                    // implement this
-                    // vs afterSymbolFirsts = collectFirsts3(vs(development.begin()+j+1, development.end()));
                     vector<ppp> afterSymbolFirsts = collectFirsts3(parser->firstSet, vector<ppp>(development.begin() + j + 1, development.end()));
 
                     for (unsigned int k = 0; k < afterSymbolFirsts.size(); ++k) {
                         ppp first = afterSymbolFirsts[k];
-
                         if (first == EPSILON) {
                             vector<ppp> nonterminalFollows = parser->followSet[nonterminal];
-
                             for (unsigned int l = 0; l < nonterminalFollows.size(); ++l) {
                                 notDone |= addUnique(nonterminalFollows[l], symbolFollows);
                             }
@@ -650,95 +694,71 @@ void generateFollowSets(Parser* parser) {
 }
 
 vector<ppp> collectFirsts3(map<ppp, vector<ppp>> firsts, vector<ppp> sequence) {
-    // ParserTypeValue emptyValue;
-    // emptyValue.terminal = TERMINALS::EMPTY;
-    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
-
     vector<ppp> result;
     bool epsilonInSymbolFirsts = true;
 
-    // for (auto j : sequence) {
     for (unsigned int j = 0; j < sequence.size(); ++j) {
         ppp symbol = sequence[j];
         epsilonInSymbolFirsts = false;
-
         if (symbol.first == ParserTokenType::TERMINAL) {
             addUnique(symbol, result);
             break;
         }
-
         for (auto const& k : firsts[symbol]) {
             ppp first = k;
-
             epsilonInSymbolFirsts |= (first == EPSILON);
-
             addUnique(first, result);
         }
-
         epsilonInSymbolFirsts |= (!firsts.count(symbol) || firsts[symbol].empty());
-
         if (!epsilonInSymbolFirsts) {
             break;
         }
     }
-
     if (epsilonInSymbolFirsts) {
         addUnique(EPSILON, result);
     }
-
     return result;
 }
 
 void generateParseTable(Parser* parser) {
-    // ParserTypeValue emptyValue;
-    // emptyValue.terminal = TERMINALS::EMPTY;
-    // emptyValue.nonTerminal = NON_TERMINALS::NONE_NON_TERMINAL;
-    // ppp EPSILON = make_pair(ParserTokenType::TERMINAL, emptyValue);
+    // Init of cells to SKIP Production
+    for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
+        ppp nonterminal = parser->grammarRules[i].lhs;
+
+        for (unsigned int j = 0; j < terminal_names.size(); ++j) {
+            TERMINALS t = convertStringToT(terminal_names[j]);
+            ppp terminal = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(t, NON_TERMINALS::NONE_NON_TERMINAL));
+
+            parser->parseTable[nonterminal][terminal] = SKIP_PRODUCTION;
+        }
+    }
 
     for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
-        // vs rule = split(rules[i], "->");
-
-        // if (rule.size() < 2) {
-        //     cout << "KOTHI error";
-        //     continue;
-        // }
-
         ppp nonterminal = parser->grammarRules[i].lhs;
-        // string tmp;
-        // stringstream str_strm(rule[1]);
         vector<ppp> development = parser->grammarRules[i].rhs;
-        // while (str_strm >> tmp) {
-        //   development.push_back(tmp);
-        // }
-
         vector<ppp> developmentFirsts = collectFirsts3(parser->firstSet, development);
-
         for (unsigned int j = 0; j < developmentFirsts.size(); ++j) {
             ppp symbol = developmentFirsts[j];
-
             if (symbol != EPSILON) {
-                // parser->parseTable[nonterminal];
-                vector<ProductionRule> oldTableRule = parser->parseTable[nonterminal][symbol];
-
-                if (oldTableRule.empty()) {
-                    parser->parseTable[nonterminal][symbol].push_back(parser->grammarRules[i]);  // = rules[i];
-                } else {
-                    parser->parseTable[nonterminal][symbol].push_back(parser->grammarRules[i]);  // oldTableRule + "\n" + rules[i];
-                }
+                parser->parseTable[nonterminal][symbol] = parser->grammarRules[i];
             } else {
                 for (unsigned int j = 0; j < parser->followSet[nonterminal].size(); ++j) {
                     ppp symbol2 = parser->followSet[nonterminal][j];
+                    parser->parseTable[nonterminal][symbol2] = parser->grammarRules[i];
+                }
+            }
+        }
+    }
 
-                    // ruleTable[nonterminal];
-
-                    vector<ProductionRule> oldTableRule = parser->parseTable[nonterminal][symbol2];
-
-                    if (oldTableRule.empty()) {
-                        parser->parseTable[nonterminal][symbol2].push_back(parser->grammarRules[i]);  // = rules[i];
-                    } else {
-                        parser->parseTable[nonterminal][symbol2].push_back(parser->grammarRules[i]);  // = oldTableRule + "\n" + rules[i];
-                    }
+    // Adding SYNCH_PRODUNCTIONs
+    for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
+        ppp nonterminal = parser->grammarRules[i].lhs;
+        vector<ppp> rhs = parser->grammarRules[i].rhs;
+        if (!isElement(EPSILON, rhs)) {
+            for (unsigned int j = 0; j < parser->followSet[nonterminal].size(); ++j) {
+                ppp symbol2 = parser->followSet[nonterminal][j];
+                if (parser->parseTable[nonterminal][symbol2] == SKIP_PRODUCTION) {
+                    parser->parseTable[nonterminal][symbol2] = SYNCH_PRODUCTION;
                 }
             }
         }
