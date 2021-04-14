@@ -1,8 +1,3 @@
-/**
- * @file parser.cpp
- * @brief 
- * 
- */
 #include <algorithm>
 #include <cassert>
 #include <sys/stat.h>
@@ -96,8 +91,11 @@ void printTables(Parser* parser, string filename, int flag) {
           << rowSeparator << endl;
 
         // Printing rows
-        for (unsigned int i = 0; i < parser->grammarRules.size(); ++i) {
-            ppp nonterminal = parser->grammarRules[i].lhs;
+        for (unsigned int i = 0; i < non_terminal_names.size(); ++i) {
+            NON_TERMINALS nt = convertStringToNT(non_terminal_names[i]);
+            ppp nonterminal = make_pair(ParserTokenType::NON_TERMINAL, ParserTypeValue(TERMINALS::NONE_TERMINAL, nt));
+
+            // ppp nonterminal = parser->grammarRules[i].lhs;
             temp = non_terminal_names[nonterminal.second.nonTerminal];
             string left_spaces = string((columnWidth - temp.length()) / 2, ' ');
             string right_spaces = string((columnWidth - temp.length() + 1) / 2, ' ');
@@ -124,7 +122,6 @@ void printTables(Parser* parser, string filename, int flag) {
         }
     }
     f.close();
-    chmod(filename.c_str(), S_IRUSR | S_IRGRP | S_IROTH);
 }
 
 Parser* initializeParser(string filename) {
@@ -203,8 +200,10 @@ void runParser(Parser* parser) {
             } else {
                 ++tokenIndex;
                 if (tokenIndex < parser->parserTokenList.size()) {
+                    parser->syntaxErrors.push_back(SyntaxError(*(parser->parserTokenList[tokenIndex]), a));
                     a = parser->parserTokenList[tokenIndex]->lexerValueTokenTypeIdentifier;
                 } else {
+                    parser->syntaxErrors.push_back(SyntaxError(*(parser->parserTokenList.back()), a));
                     parser->parseStack.pop_back();
                 }
             }
@@ -246,7 +245,7 @@ void productionsRulesInit(Parser* parser) {
                 ParserTypeValue lhsValue(TERMINALS::NONE_TERMINAL, convertStringToNT(lhs));
                 ProductionRule pRule = ProductionRule(make_pair(ParserTokenType::NON_TERMINAL, lhsValue));
                 if (rhs == "\'\'") {
-                    pRule.rhs.push_back(make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::EMPTY, NON_TERMINALS::NONE_NON_TERMINAL)));
+                    pRule.rhs.push_back(EPSILON);
                 } else {
                     vector<string> vs = split(rhs, " ");
 
@@ -556,10 +555,6 @@ bool isElement(T element, vector<T> arr) {
     return find(arr.begin(), arr.end(), element) != arr.end();
 }
 
-bool isElement(string element, vector<string> arr) {
-    return find(arr.begin(), arr.end(), element) != arr.end();
-}
-
 TERMINALS convertStringToT(string s) {
     for (unsigned int i = 0; i < terminal_names.size(); ++i) {
         if (terminal_names[i] == s) {
@@ -611,14 +606,6 @@ void generateFirstSets(Parser* parser) {
         }
         ++count;
     } while (notDone);
-}
-
-bool isPPPElement(ppp element, vector<ppp>& rhs) {
-    return (find(rhs.begin(), rhs.end(), element) != rhs.end());
-}
-
-bool isProductionRuleElement(ProductionRule element, vector<ProductionRule>& rhs) {
-    return (find(rhs.begin(), rhs.end(), element) != rhs.end());
 }
 
 bool addUnique(ppp element, vector<ppp>& arr) {

@@ -96,3 +96,11 @@ Check `./tests/examples/` directory for the examples.
 - [x] SYNCH Errors
 
 - [ ] Test with multiple programs and create test suite
+	- [x] Init
+	- [x] Expression
+	- [x] Conditionals
+	- [x] Loops
+	- [x] Funtion
+	- [x] Recursion
+	- [x] Complex
+	- [x] Errors

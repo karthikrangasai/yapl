@@ -20,6 +20,13 @@ int main(int argc, char const* argv[]) {
 
     runParser(parser);
 
+    if (!parser->lexerErrors.empty()) {
+        unsigned int numLexerErros = parser->lexerErrors.size();
+        for (unsigned int i = 0; i < numLexerErros; ++i) {
+            parser->lexerErrors[i]->print(parser->lexer->fileName);
+        }
+    }
+
     if (parser->syntaxErrors.empty()) {
         // print LMD
         fstream f("output.txt", fstream::out);
@@ -39,28 +46,5 @@ int main(int argc, char const* argv[]) {
             e.print();
         }
     }
-
-    // cout << "Syntax Errors:" << endl;
-    // for (SyntaxError e : parser->syntaxErrors) {
-    //     e.print();
-    // }
-
-    // cout << "--------------------------------------------------------------" << endl;
-    // cout << "LMD:" << endl;
-    // for (vector<ppp> stackInput : parser->stackLMD) {
-    //     printStackProductions(stackInput);
-    // }
-
-    // if (parser->lexerErrors.empty()) {
-    //     unsigned int numTokens = parser->tokenList.size();
-    //     for (unsigned int i = 0; i < numTokens; ++i) {
-    //         parser->tokenList[i]->print();
-    //     }
-    // } else {
-    //     unsigned int numLexerErros = parser->lexerErrors.size();
-    //     for (unsigned int i = 0; i < numLexerErros; ++i) {
-    //         parser->lexerErrors[i]->print(parser->lexer->fileName);
-    //     }
-    // }
     return 0;
 }

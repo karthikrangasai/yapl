@@ -1,7 +1,3 @@
-/**
- * @file parser.hpp
- * @brief 
- */
 #ifndef PARSER_H
 #define PARSER_H
 #include <unordered_map>
@@ -15,13 +11,6 @@
 #include "lexer.hpp"
 using namespace std;
 
-// #ifdef __cplusplus
-// extern "C" {
-// #endif
-
-/**
- * @brief List of all the Terminals
- */
 enum TERMINALS {
     NONE_TERMINAL = -1,
     EMPTY,
@@ -66,11 +55,7 @@ enum TERMINALS {
 
 const unsigned int numTerminals = 0;
 
-/**
- * @brief O(1) lookup table for string to enum conversion of all the Terminals.
- */
 const vector<string> terminal_names = {
-    // "NONE_TERMINAL",
     "EMPTY",
     "IDENTIFIER",
     "FUNCTION_IDENTIFIER",
@@ -111,11 +96,6 @@ const vector<string> terminal_names = {
     "END_MARKER",
 };
 
-// map<TERMINALS, string> terminalValueLookup;
-
-/**
- * @brief List of all the Non-Terminals.
- */
 enum NON_TERMINALS {
     NONE_NON_TERMINAL = -1,
     PROGRAM,
@@ -137,8 +117,6 @@ enum NON_TERMINALS {
     ADDITIONAL_ARGUMENTS,
     INITIALIZATION_STATEMENTS,
     ASSIGN_STATEMENT,
-    TERMIMAL_EXPRESSIONS,
-    ADDITIONAL_TERMINALS,
     EXPRESSION,
     LOGICAL_EXPRESSION,
     RELATIONAL_EXPRESSION,
@@ -157,15 +135,9 @@ enum NON_TERMINALS {
     DATA_TYPE,
     BOOLEAN,
     INTEGER,
-    NEGATIVE_INTEGER,
 };
 
-/**
- * @brief O(1) lookup table for string to enum conversion of all the Non-Terminals.
- */
 const vector<string> non_terminal_names = {
-    // "NONE_NON_TERMINAL",
-    "PROGRAM",
     "PROGRAM",
     "FUNCTIONS",
     "FUNCTION",
@@ -185,8 +157,6 @@ const vector<string> non_terminal_names = {
     "ADDITIONAL_ARGUMENTS",
     "INITIALIZATION_STATEMENTS",
     "ASSIGN_STATEMENT",
-    "TERMIMAL_EXPRESSIONS",
-    "ADDITIONAL_TERMINALS",
     "EXPRESSION",
     "LOGICAL_EXPRESSION",
     "RELATIONAL_EXPRESSION",
@@ -205,20 +175,13 @@ const vector<string> non_terminal_names = {
     "DATA_TYPE",
     "BOOLEAN",
     "INTEGER",
-    "NEGATIVE_INTEGER",
 };
 
-/**
- * @brief Defines they type of the parser node value as Terminal node or Non-Terminal node.
- */
 enum ParserTokenType {
     TERMINAL,
     NON_TERMINAL
 };
 
-/**
- * @brief Object to hold either a Terminal value or Non-Terminal value.
- */
 typedef struct ParserTypeValue {
     TERMINALS terminal;
     NON_TERMINALS nonTerminal;
@@ -246,27 +209,12 @@ typedef pair<ParserTokenType, ParserTypeValue> ppp;
 const ppp EPSILON = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::EMPTY, NON_TERMINALS::NONE_NON_TERMINAL));
 const ppp _END_MARKER = make_pair(ParserTokenType::TERMINAL, ParserTypeValue(TERMINALS::END_MARKER, NON_TERMINALS::NONE_NON_TERMINAL));
 
-/**
- * @brief A single production rule in the grammar that defines what a Non-Terminal exapnds to.
- * 
- */
 typedef struct ProductionRule {
-    //!
-    // NON_TERMINALS lhs;
     ppp lhs;
-
-    //!
     vector<pair<ParserTokenType, ParserTypeValue>> rhs;
-
-    //!
     bool synchProduction;
     bool skipProduction;
 
-    /**
-	 * @brief Construct a new Production Rule object
-	 * 
-	 * @param lhs 
-	 */
     ProductionRule(ppp lhs) {
         this->lhs = lhs;
         this->rhs = vector<pair<ParserTokenType, ParserTypeValue>>();
@@ -279,7 +227,6 @@ typedef struct ProductionRule {
     }
 
     ProductionRule() {
-        // create Skip Production
         this->synchProduction = false;
         this->skipProduction = true;
     }
@@ -316,24 +263,24 @@ typedef struct ProductionRule {
 const ProductionRule SYNCH_PRODUCTION = ProductionRule(true);
 const ProductionRule SKIP_PRODUCTION = ProductionRule();
 
-/**
- * @brief 
- */
 typedef struct ParserNode {
     ppp lexerValueTokenTypeIdentifier;
-    // ParserTokenType type;
-    // ParserTypeValue value;
     Token* lexerToken;
 
     ParserNode(ppp lexerValueTokenTypeIdentifier, Token* lexerToken) {
         this->lexerValueTokenTypeIdentifier = lexerValueTokenTypeIdentifier;
         this->lexerToken = lexerToken;
     }
+
+    const bool operator==(const ParserNode& other) const {
+        return tie(lexerValueTokenTypeIdentifier, lexerToken) == tie(other.lexerValueTokenTypeIdentifier, other.lexerToken);
+    }
 } ParserNode;
 
 enum SyntaxErrorType {
     SKIP,
     SYNCH,
+    MISMATCHED_TERMINALS,
 };
 
 string terminalLookup(TERMINALS terminals);
@@ -345,17 +292,25 @@ typedef struct SyntaxError {
     ppp received;
 
     SyntaxError(ParserNode parserNode, ppp expected, ppp received) : parserNode{parserNode} {
-        this->errorType = SKIP;
+        this->errorType = MISMATCHED_TERMINALS;
         this->expected = expected;
         this->received = received;
     }
 
     SyntaxError(ParserNode parserNode) : parserNode{parserNode} {
         this->errorType = SYNCH;
+        this->expected = EPSILON;
+        this->received = EPSILON;
+    }
+
+    SyntaxError(ParserNode parserNode, ppp received) : parserNode{parserNode} {
+        this->errorType = SKIP;
+        this->received = received;
+        this->expected = EPSILON;
     }
 
     void print() {
-        if (this->errorType == SyntaxErrorType::SKIP) {
+        if (this->errorType == SyntaxErrorType::MISMATCHED_TERMINALS) {
             cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number << ":" << parserNode.lexerToken->columnNumber << ": ";
             cout << "\033[1;31mSyntax Error: \033[0m";
             if (received.second.terminal == TERMINALS::FUNCTION_IDENTIFIER || received.second.terminal == TERMINALS::IDENTIFIER || received.second.terminal == TERMINALS::POSITIVE_INTEGER) {
@@ -363,61 +318,23 @@ typedef struct SyntaxError {
             } else {
                 cout << "Expected \'" << terminalLookup(expected.second.terminal) << "\' but received \'" << terminalLookup(received.second.terminal) << "\'" << endl;
             }
-
             cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << "\n";
-            // cout << "  " << parserNode.lexerToken->line_number << " | ";
-            // for (unsigned int i = 0; i < parserNode.lexerToken->columnNumber; ++i) {
-            //     cout << " ";
-            // }
-            // cout << "^";
-            // for (unsigned int i = 0; i < (parserNode.lexerToken->tokenLength - 1); ++i) {
-            //     cout << "~";
-            // }
             cout << endl;
         } else if (this->errorType == SyntaxErrorType::SYNCH) {
-            cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number << ": ";  //":" << parserNode.lexerToken->columnNumber << ": ";
+            cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number << ": ";
             cout << "\033[1;31mSyntax Error: \033[0m"
                  << "\n";
-            // cout << "Expected " << terminal_names[expected.second.terminal] << ", but received " << terminal_names[received.second.terminal] << endl;
             cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << "\n";
-            // cout << "  " << parserNode.lexerToken->line_number << " | ";
-            // for (unsigned int i = 0; i < parserNode.lexerToken->columnNumber; ++i) {
-            //     cout << " ";
-            // }
-            // cout << "^";
-            // for (unsigned int i = 0; i < (parserNode.lexerToken->tokenLength - 1); ++i) {
-            //     cout << "~";
-            // }
             cout << endl;
+        } else if (this->errorType == SyntaxErrorType::SKIP) {
+            cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number << ": ";
+            cout << "\033[1;31mSyntax Error: \033[0m"
+                 << "\n";
+            cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << "\n";
         }
     }
 } SyntaxError;
 
-// typedef struct SyntaxError_Synch {
-//     ParserNode parserNode;
-
-//     SyntaxError_Synch(ParserNode parserNode) : parserNode{parserNode} {}
-
-//     void print() {
-//         cout << parserNode.lexerToken->filename << ":" << parserNode.lexerToken->line_number;  //":" << parserNode.lexerToken->columnNumber << ": ";
-//         cout << "\033[1;31mSyntax Error: \033[0m" << endl;
-//         // cout << "Expected " << terminal_names[expected.second.terminal] << ", but received " << terminal_names[received.second.terminal] << endl;
-//         cout << "  " << parserNode.lexerToken->line_number << " | " << parserNode.lexerToken->buffer << endl;
-//         // cout << "  " << parserNode.lexerToken->line_number << " | ";
-//         // for (unsigned int i = 0; i < parserNode.lexerToken->columnNumber; ++i) {
-//         //     cout << " ";
-//         // }
-//         // cout << "^";
-//         // for (unsigned int i = 0; i < (parserNode.lexerToken->tokenLength - 1); ++i) {
-//         //     cout << "~";
-//         // }
-//         cout << endl;
-//     }
-// } SyntaxError_Synch;
-
-/**
- * @brief 
- */
 typedef struct Parser {
     Lexer* lexer;
     vector<Token*> tokenList;
@@ -426,35 +343,26 @@ typedef struct Parser {
 
     fstream rules_file;
     vector<ProductionRule> grammarRules;
-    // First Set
-    // map<pair<ParserTokenType, ParserTypeValue>, vector<pair<ParserTokenType, ParserTypeValue>>> firstSet;
+
+    //! First Set
     map<ppp, vector<ppp>> firstSet;
+
+    //! Follow Set
     map<ppp, vector<ppp>> followSet;
+
+    //! Parse Table for the LL(1) Grammar
     map<ppp, map<ppp, ProductionRule>> parseTable;
 
-    /*
-	1) Print all the Grammar rule : i) X -> ABCDEFGHI
-	   +-------------------------------------------+
-	   | a  b    b   b b  b  b b                           |
-	A    X -> ABCDEFGHI	     2   
-	B
-	C
-	D
-	E
-	F
-	G
-	H
-	I
-	
-	*/
-    // Follow Set
-    // Parse Table
+    //! Parsing Stack
     vector<ppp> parseStack;
+
+    //! List of all the Syntax Errors
     vector<SyntaxError> syntaxErrors;
+
+    //! The Left Most Derivation of the current input string.
     vector<vector<ppp>> stackLMD;
 
     Parser(string filename) {
-        // initTerminalLookup();
         this->lexer = initLexer(filename);
         this->tokenList = vector<Token*>();
         this->parserTokenList = vector<ParserNode*>();
@@ -464,99 +372,28 @@ typedef struct Parser {
         this->followSet = map<ppp, vector<ppp>>();
         this->parseStack = vector<ppp>();
         this->parseStack.push_back(_END_MARKER);
-        // this->parseStack.push_back(make_pair(ParserTokenType::NON_TERMINAL, ParserTypeValue(TERMINALS::NONE_TERMINAL, NON_TERMINALS::PROGRAM)));
     }
 } Parser;
 
 void printStackProductions(vector<ppp>);
 
-void printTokenMessage(Token* token);
-
-/**
- * @brief Takes as input a string type object and returns the parser object.
- * 
- * @param filename 
- * @return Parser* 
- */
 Parser* initializeParser(string filename);
 
-/**
- * @brief Takes as input a parser object and accumalates all the tokens, errors.
- * 
- * @param parser 
- */
-void runParser(Parser* parser);
-
-/**
- * @brief Read from the rules.bnf file and create a vector of Production Rules
- * 
- * @param parser 
- */
-void productionsRulesInit(Parser* parser);
-
-/**
- * @brief Converts the lexer token type to a parser terminal type.
- * 
- * @param lexerToken 
- * @return ParserNode* 
- */
-ParserNode* determineParserNode(Token* lexerToken);
-
-/**
- * @brief 
- * 
- * @return true 
- * @return false 
- */
-bool isElement(string, vector<string>);
-
-/**
- * @brief 
- * 
- * @return true 
- * @return false 
- */
-bool isPPPElement(ppp, vector<ppp>&);
-
-bool isProductionRuleElement(ProductionRule, vector<ProductionRule>&);
-
-/**
- * @brief 
- * 
- * @return TERMINALS 
- */
 TERMINALS convertStringToT(string);
-
-/**
- * @brief 
- * 
- * @return NON_TERMINALS 
- */
 NON_TERMINALS convertStringToNT(string);
 
-/**
- * @brief 
- * 
- * @param line 
- * @param delim 
- * @return vector<string> 
- */
+void productionsRulesInit(Parser* parser);
+
+ParserNode* determineParserNode(Token* lexerToken);
 vector<string> split(const string& line, const string& delim);
-
-bool addUnique(ppp, vector<ppp>&);
-bool collectFirsts4(map<ppp, vector<ppp>>&, vector<ppp>&, vector<ppp>&);
-
-void generateFirstSets(Parser*);
-
-vector<ppp> collectFirsts3(map<ppp, vector<ppp>>, vector<ppp>);
-void generateFollowSets(Parser*);
-
-void generateParseTable(Parser*);
-
 template <class T>
 bool isElement(T element, vector<T> arr);
+bool addUnique(ppp, vector<ppp>&);
+bool collectFirsts4(map<ppp, vector<ppp>>&, vector<ppp>&, vector<ppp>&);
+vector<ppp> collectFirsts3(map<ppp, vector<ppp>>, vector<ppp>);
+void generateFirstSets(Parser*);
+void generateFollowSets(Parser*);
+void generateParseTable(Parser*);
 
-// #ifdef __cplusplus
-// }
-// #endif
+void runParser(Parser* parser);
 #endif
